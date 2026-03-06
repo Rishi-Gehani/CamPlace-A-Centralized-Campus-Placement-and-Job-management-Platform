@@ -45,7 +45,7 @@ export default function Forum() {
               <input 
                 type="text" 
                 placeholder="Search discussions..." 
-                className="input-field pl-12"
+                className="w-full !pl-14 pr-4 py-4 rounded-2xl border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
               />
             </div>
 

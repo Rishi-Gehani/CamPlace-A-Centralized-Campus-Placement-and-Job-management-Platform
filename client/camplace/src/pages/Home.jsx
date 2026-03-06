@@ -90,11 +90,13 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-grow max-w-md">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/40" size={20} />
+                  
                   <input
                     type="text"
                     placeholder="Search jobs, internships..."
-                    className="input-field pl-12"
+                    className="w-full !pl-14 pr-4 py-4 rounded-full border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                   />
+
                 </div>
                 <button className="btn-secondary whitespace-nowrap">Get Started</button>
               </div>
