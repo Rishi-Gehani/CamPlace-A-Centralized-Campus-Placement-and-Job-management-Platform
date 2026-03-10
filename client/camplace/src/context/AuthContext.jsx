@@ -1,6 +1,5 @@
-import { createContext, useState, useEffect, useContext } from 'react';
-
-const AuthContext = createContext();
+import { useState, useEffect } from 'react';
+import { AuthContext } from './AuthContext';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -64,7 +63,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (firstName, lastName, email, password) => {
+  const register = async (userData) => {
     setError(null);
     try {
       const res = await fetch('http://localhost:3000/api/auth/register', {
@@ -72,7 +71,7 @@ export const AuthProvider = ({ children }) => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ firstName, lastName, email, password })
+        body: JSON.stringify(userData)
       });
       const data = await res.json();
       if (res.ok) {
@@ -121,4 +120,3 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext);

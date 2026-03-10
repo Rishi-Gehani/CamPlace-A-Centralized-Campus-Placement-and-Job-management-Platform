@@ -1,23 +1,21 @@
 import { motion } from "motion/react";
 import { Search, ArrowRight, TrendingUp, Users, Building2, CheckCircle2, MessageSquare, ShieldCheck, Briefcase } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 import { useEffect } from "react";
 
 export default function Home() {
   const { user, openAuthModal } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (location.state?.openAuth) {
-      const timer = setTimeout(() => {
-        openAuthModal(location.state.openAuth);
-        // Clear state to prevent modal from reopening on refresh
-        window.history.replaceState({}, document.title);
-      }, 0);
-      return () => clearTimeout(timer);
+      openAuthModal(location.state.openAuth);
+      // Clear state properly using navigate to prevent modal from reopening
+      navigate(location.pathname, { replace: true, state: {} });
     }
-  }, [location, openAuthModal]);
+  }, [location, openAuthModal, navigate]);
 
   const handleProtectedAction = (e, mode = 'login') => {
     if (!user) {
