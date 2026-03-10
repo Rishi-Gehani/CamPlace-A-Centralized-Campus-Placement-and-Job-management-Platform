@@ -1,15 +1,16 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { X, User, History, HelpCircle, Lock, LogOut, ChevronRight, Shield } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
+import { Link } from 'react-router-dom';
 
 export default function ProfileSidebar({ isOpen, onClose }) {
   const { user, logout } = useAuth();
 
   const menuItems = [
-    { icon: User, label: 'Manage Profile', path: '#' },
-    { icon: History, label: 'Application Tracking', path: '#' },
-    { icon: HelpCircle, label: 'Help Manual', path: '#' },
-    { icon: Lock, label: 'Change Password', path: '#' },
+    { icon: User, label: 'Manage Profile', path: '/profile' },
+    { icon: History, label: 'Application Tracking', path: '/applications' },
+    { icon: HelpCircle, label: 'Help Manual', path: '/help' },
+    { icon: Lock, label: 'Change Password', path: '/security' },
   ];
 
   if (!user) return null;
@@ -59,8 +60,10 @@ export default function ProfileSidebar({ isOpen, onClose }) {
 
               <div className="space-y-2">
                 {menuItems.map((item, idx) => (
-                  <button
+                  <Link
                     key={idx}
+                    to={item.path}
+                    onClick={onClose}
                     className="w-full flex items-center justify-between p-4 rounded-2xl hover:bg-black/5 transition-all group"
                   >
                     <div className="flex items-center gap-4">
@@ -70,7 +73,7 @@ export default function ProfileSidebar({ isOpen, onClose }) {
                       <span className="font-medium text-secondary/80">{item.label}</span>
                     </div>
                     <ChevronRight size={16} className="text-secondary/20 group-hover:text-primary transition-colors" />
-                  </button>
+                  </Link>
                 ))}
               </div>
             </div>

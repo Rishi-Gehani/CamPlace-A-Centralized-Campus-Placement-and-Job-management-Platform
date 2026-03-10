@@ -2,7 +2,7 @@ import { Link, NavLink } from "react-router-dom";
 import { motion } from "motion/react";
 import { User, LogIn, Menu, X, Shield } from "lucide-react";
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import AuthModal from "./AuthModal";
 import ProfileSidebar from "./ProfileSidebar";
 
@@ -139,6 +139,7 @@ export default function Navbar() {
 
     </nav>
     <AuthModal 
+      key={isAuthModalOpen ? 'open' : 'closed'}
       isOpen={isAuthModalOpen} 
       onClose={closeAuthModal} 
       initialMode={authMode}

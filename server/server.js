@@ -42,8 +42,8 @@ mongoose.connect(mongoURL)
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash('Rishi@7984', salt);
       const admin = new User({
-        firstName: 'Rishi',
-        lastName: 'Gehani',
+        firstName: 'Admin',
+        lastName: 'User',
         email: adminEmail,
         password: hashedPassword,
         role: 'admin'
