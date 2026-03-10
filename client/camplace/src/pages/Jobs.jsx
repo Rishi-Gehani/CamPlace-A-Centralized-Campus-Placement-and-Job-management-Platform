@@ -1,7 +1,14 @@
 import { motion } from "motion/react";
 import { Search, MapPin, Building2, Calendar, Filter, ChevronRight } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import { Navigate } from "react-router-dom";
 
 export default function Jobs() {
+  const { user, loading } = useAuth();
+
+  if (loading) return null;
+  if (!user) return <Navigate to="/" state={{ openAuth: 'login' }} />;
+
   const jobs = [
     {
       id: 1,
@@ -70,9 +77,8 @@ export default function Jobs() {
               <input 
                 type="text" 
                 placeholder="Search by role, company, or skills..." 
-                className="w-full !pl-14 pr-4 py-4 rounded-2xl border border-black/5 bg-[#F8F9FA] focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                className="w-full !pl-14 pr-4 py-4 rounded-2xl border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
               />
-              
             </div>
             <div className="flex gap-4">
               <button className="flex items-center gap-2 px-6 py-4 rounded-2xl border border-black/5 bg-white hover:bg-[#F8F9FA] transition-all font-semibold">

@@ -1,8 +1,30 @@
 import { motion } from "motion/react";
 import { Search, ArrowRight, TrendingUp, Users, Building2, CheckCircle2, MessageSquare, ShieldCheck, Briefcase } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { useEffect } from "react";
 
 export default function Home() {
+  const { user, openAuthModal } = useAuth();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.openAuth) {
+      const timer = setTimeout(() => {
+        openAuthModal(location.state.openAuth);
+        // Clear state to prevent modal from reopening on refresh
+        window.history.replaceState({}, document.title);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [location, openAuthModal]);
+
+  const handleProtectedAction = (e, mode = 'login') => {
+    if (!user) {
+      e.preventDefault();
+      openAuthModal(mode);
+    }
+  };
   const stats = [
     { label: "Students Registered", value: "500+", icon: <Users className="text-primary" /> },
     { label: "Job Opportunities", value: "300+", icon: <Briefcase className="text-primary" /> },
@@ -90,15 +112,22 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-grow max-w-md">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/40" size={20} />
-                  
                   <input
                     type="text"
                     placeholder="Search jobs, internships..."
                     className="w-full !pl-14 pr-4 py-4 rounded-full border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                   />
-
                 </div>
-                <button className="btn-secondary whitespace-nowrap">Get Started</button>
+                {user ? (
+                  <button className="btn-secondary whitespace-nowrap">Search Jobs</button>
+                ) : (
+                  <button 
+                    onClick={() => openAuthModal('login')}
+                    className="btn-secondary whitespace-nowrap"
+                  >
+                    Get Started
+                  </button>
+                )}
               </div>
 
               <div className="flex items-center gap-4 pt-4">
@@ -353,12 +382,27 @@ export default function Home() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-              <Link to="/jobs" className="btn-secondary !py-4 !px-10">Explore Opportunities</Link>
-              <Link to="/register" className="bg-white text-secondary px-10 py-4 rounded-full font-semibold hover:bg-white/90 transition-all">Create Student Account</Link>
+              <Link 
+                to="/jobs" 
+                onClick={(e) => handleProtectedAction(e)}
+                className="btn-secondary !py-4 !px-10"
+              >
+                Explore Opportunities
+              </Link>
+              {!user && (
+                <button 
+                  onClick={() => openAuthModal('register')}
+                  className="bg-white text-secondary px-10 py-4 rounded-full font-semibold hover:bg-white/90 transition-all"
+                >
+                  Create Student Account
+                </button>
+              )}
             </div>
           </div>
         </div>
       </section>
+
+      {/* No local AuthModal here, using global one in Navbar */}
     </div>
   );
 }
