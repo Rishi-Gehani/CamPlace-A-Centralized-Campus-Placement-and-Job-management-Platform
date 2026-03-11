@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Mail, Lock, User, Eye, EyeOff, CheckCircle2, Circle, Shield, Phone, GraduationCap, BookOpen, Award, Code, Briefcase, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
   const [mode, setMode] = useState(initialMode);
   const [step, setStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const { login, register, error: authError } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -126,16 +128,26 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
         placementStatus: 'NOT_PLACED'
       };
 
-      const success = await register(submissionData);
-      if (success) onClose();
+      const loggedInUser = await register(submissionData);
+      if (loggedInUser) {
+        onClose();
+        if (loggedInUser.role === 'admin') {
+          navigate('/admin');
+        }
+      }
     } else {
       if (!formData.email || !formData.password) {
         setError('All fields are required');
         setLoading(false);
         return;
       }
-      const success = await login(formData.email, formData.password);
-      if (success) onClose();
+      const loggedInUser = await login(formData.email, formData.password);
+      if (loggedInUser) {
+        onClose();
+        if (loggedInUser.role === 'admin') {
+          navigate('/admin');
+        }
+      }
     }
     setLoading(false);
   };

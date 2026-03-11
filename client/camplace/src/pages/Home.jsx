@@ -10,6 +10,12 @@ export default function Home() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (user?.role === 'admin') {
+      navigate('/admin');
+    }
+  }, [user, navigate]);
+
+  useEffect(() => {
     if (location.state?.openAuth) {
       openAuthModal(location.state.openAuth);
       // Clear state properly using navigate to prevent modal from reopening

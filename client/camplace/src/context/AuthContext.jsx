@@ -52,14 +52,14 @@ export const AuthProvider = ({ children }) => {
       if (res.ok) {
         localStorage.setItem('token', data.token);
         setUser(data.user);
-        return true;
+        return data.user;
       } else {
         setError(data.message || 'Login failed');
-        return false;
+        return null;
       }
     } catch {
       setError('Server error');
-      return false;
+      return null;
     }
   };
 
@@ -77,14 +77,14 @@ export const AuthProvider = ({ children }) => {
       if (res.ok) {
         localStorage.setItem('token', data.token);
         setUser(data.user);
-        return true;
+        return data.user;
       } else {
         setError(data.message || 'Registration failed');
-        return false;
+        return null;
       }
     } catch {
       setError('Server error');
-      return false;
+      return null;
     }
   };
 
