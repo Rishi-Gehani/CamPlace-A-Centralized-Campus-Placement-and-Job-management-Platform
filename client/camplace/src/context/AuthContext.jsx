@@ -22,17 +22,21 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (user) {
       const socket = io();
-      socket.emit('join', user.id || user._id);
+      const userId = user.id || user._id;
+      socket.emit('join', userId);
 
       socket.on('statusUpdate', (data) => {
-        setUser(prev => ({ ...prev, ...data }));
+        setUser(prev => {
+          if (!prev) return prev;
+          return { ...prev, ...data };
+        });
       });
 
       return () => {
         socket.disconnect();
       };
     }
-  }, [user?.id, user?._id, user]);
+  }, [user?.id, user?._id]);
 
   const fetchUser = async (token) => {
     try {
@@ -135,4 +139,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-
