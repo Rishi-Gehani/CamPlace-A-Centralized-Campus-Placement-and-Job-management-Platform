@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AuthContext } from './AuthContext';
+import { io } from 'socket.io-client';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -17,6 +18,21 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      const socket = io();
+      socket.emit('join', user.id || user._id);
+
+      socket.on('statusUpdate', (data) => {
+        setUser(prev => ({ ...prev, ...data }));
+      });
+
+      return () => {
+        socket.disconnect();
+      };
+    }
+  }, [user?.id, user?._id, user]);
 
   const fetchUser = async (token) => {
     try {

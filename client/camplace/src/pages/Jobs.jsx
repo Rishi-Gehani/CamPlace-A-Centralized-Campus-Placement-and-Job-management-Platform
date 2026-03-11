@@ -1,13 +1,21 @@
 import { motion } from "motion/react";
-import { Search, MapPin, Building2, Calendar, Filter, ChevronRight } from "lucide-react";
+import { Search, MapPin, Building2, Calendar, Filter, ChevronRight, ShieldAlert, Clock, XCircle } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
-import { Navigate } from "react-router-dom";
+import { Navigate, Link } from "react-router-dom";
 
 export default function Jobs() {
   const { user, loading } = useAuth();
 
-  if (loading) return null;
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+    </div>
+  );
+  
   if (!user) return <Navigate to="/" />;
+
+  const isVerified = user.role === 'admin' || user.profileStatus === 'VERIFIED';
+  const isPending = user.profileStatus === 'PENDING';
 
   const jobs = [
     {
@@ -41,6 +49,50 @@ export default function Jobs() {
       logo: "https://www2.deloitte.com/content/dam/Deloitte/in/Images/promo_images/deloitte-logo-black.png",
     },
   ];
+
+  if (!isVerified) {
+    return (
+      <div className="min-h-screen bg-[#F8F9FA] pt-24 pb-32">
+        <div className="page-container max-w-4xl">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-[2.5rem] p-12 shadow-sm border border-black/5 text-center space-y-8"
+          >
+            <div className="w-24 h-24 rounded-3xl bg-amber-50 flex items-center justify-center text-amber-500 mx-auto">
+              {isPending ? <Clock size={48} /> : <XCircle size={48} />}
+            </div>
+            
+            <div className="space-y-4">
+              <h1 className="text-4xl font-display font-bold text-secondary">
+                {isPending ? 'Verification in Progress' : 'Profile Not Verified'}
+              </h1>
+              <p className="text-secondary/60 text-lg max-w-xl mx-auto">
+                {isPending 
+                  ? "Your profile is currently under review by the administration. You'll gain access to all opportunities once your profile is verified."
+                  : "Your profile verification was not successful. Please update your details or contact the administration for more information."}
+              </p>
+            </div>
+
+            <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link to="/profile" className="btn-primary !py-4 !px-10">
+                Update Profile
+              </Link>
+              <Link to="/contact" className="px-10 py-4 border border-black/10 text-secondary font-bold rounded-2xl hover:bg-black/5 transition-all">
+                Contact Support
+              </Link>
+            </div>
+
+            <div className="pt-12 border-t border-black/5">
+              <div className="flex items-center justify-center gap-3 text-secondary/40 text-sm font-bold uppercase tracking-widest">
+                <ShieldAlert size={16} /> Secure Verification Process
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="pb-24">
