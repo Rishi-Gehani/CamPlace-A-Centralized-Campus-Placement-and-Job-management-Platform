@@ -6,7 +6,10 @@ import path from 'path';
 import bcrypt from 'bcryptjs';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 import authRoutes from './routes/auth.js';
+import adminRoutes from './routes/admin.js';
 import User from './models/User.js';
 
 dotenv.config();
@@ -15,12 +18,37 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST", "PUT"]
+  }
+});
+
 const PORT = 3000;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Socket.io connection
+io.on('connection', (socket) => {
+  console.log('A user connected:', socket.id);
+
+  socket.on('join', (room) => {
+    socket.join(room);
+    console.log(`User ${socket.id} joined room: ${room}`);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected');
+  });
+});
+
+// Make io accessible to routes
+app.set('io', io);
 
 // Database Connection
 const mongoURL = process.env.MONGODB_URI;
@@ -56,6 +84,7 @@ mongoose.connect(mongoURL)
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Vite middleware for development
 if (process.env.NODE_ENV !== "production") {
@@ -67,7 +96,7 @@ if (process.env.NODE_ENV !== "production") {
     });
     app.use(vite.middlewares);
   }
-  setupVite();
+  await setupVite();
 } else {
   // Serve static files in production
   app.use(express.static(path.join(__dirname, '../dist')));
@@ -76,6 +105,6 @@ if (process.env.NODE_ENV !== "production") {
   });
 }
 
-app.listen(PORT, "0.0.0.0", () => {
+httpServer.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });

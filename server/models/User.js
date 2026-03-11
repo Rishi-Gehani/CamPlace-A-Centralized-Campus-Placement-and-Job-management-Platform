@@ -81,7 +81,7 @@ const userSchema = new mongoose.Schema({
   },
   profileStatus: {
     type: String,
-    enum: ['PENDING', 'APPROVED', 'REJECTED'],
+    enum: ['PENDING', 'VERIFIED', 'REJECTED'],
     default: 'PENDING'
   },
   placementStatus: {
