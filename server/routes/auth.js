@@ -68,7 +68,8 @@ router.post('/register', async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        role: user.role
+        role: user.role,
+        profileStatus: user.profileStatus
       }
     });
   } catch (err) {
@@ -108,7 +109,8 @@ router.post('/login', async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        role: user.role
+        role: user.role,
+        profileStatus: user.profileStatus
       }
     });
   } catch (err) {
