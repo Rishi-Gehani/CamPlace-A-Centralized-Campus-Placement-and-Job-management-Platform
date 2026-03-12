@@ -14,10 +14,10 @@ export default function AdminDashboard() {
     try {
       const token = localStorage.getItem('token');
       const [allRes, pendingRes] = await Promise.all([
-        fetch('/api/admin/students', {
+        fetch('http://localhost:3000/api/admin/students', {
           headers: { 'x-auth-token': token }
         }),
-        fetch('/api/admin/students/pending', {
+        fetch('http://localhost:3000/api/admin/students/pending', {
           headers: { 'x-auth-token': token }
         })
       ]);
