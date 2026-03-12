@@ -37,7 +37,10 @@ export default function AdminDashboard() {
   }, []);
 
   useEffect(() => {
-    fetchStats();
+    const loadStats = async () => {
+      await fetchStats();
+    };
+    loadStats();
   }, [fetchStats]);
 
   const statCards = [

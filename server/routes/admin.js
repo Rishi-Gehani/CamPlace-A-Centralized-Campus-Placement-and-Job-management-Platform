@@ -57,4 +57,18 @@ router.put('/students/verify/:id', adminAuth, async (req, res) => {
   }
 });
 
+// Delete student
+router.delete('/students/:id', adminAuth, async (req, res) => {
+  try {
+    const student = await User.findByIdAndDelete(req.params.id);
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    res.json({ message: 'Student deleted successfully' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
 export default router;
