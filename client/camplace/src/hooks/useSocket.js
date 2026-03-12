@@ -8,7 +8,7 @@ export const useSocket = () => {
   const socket = useMemo(() => {
     if (!user) return null;
     return io();
-  }, [user?.id, user?._id, user]);
+  }, [user]);
 
   useEffect(() => {
     if (socket && user) {

@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }) => {
         socket.disconnect();
       };
     }
-  }, [user?.id, user?._id]);
+  }, [user, user?.id, user?._id]);
 
   const fetchUser = async (token) => {
     try {
