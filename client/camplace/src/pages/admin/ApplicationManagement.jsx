@@ -1,15 +1,263 @@
-import { motion } from "motion/react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Search, CheckCircle2, XCircle, AlertCircle, ArrowRight } from "lucide-react";
+
+const STAGES = [
+  { id: 'APPLIED', label: 'Applied' },
+  { id: 'SHORTLISTED', label: 'Shortlisted' },
+  { id: 'INTERVIEW_ROUND_1', label: 'Aptitude' },
+  { id: 'INTERVIEW_ROUND_2', label: 'Technical' },
+  { id: 'INTERVIEW_ROUND_3', label: 'HR' },
+  { id: 'SELECTED', label: 'Selected' },
+  { id: 'REJECTED', label: 'Rejected' }
+];
 
 export default function ApplicationManagement() {
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [updatingId, setUpdatingId] = useState(null);
+
+  useEffect(() => {
+    fetchApplications();
+  }, []);
+
+  const fetchApplications = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch('http://localhost:3000/api/applications/admin', {
+        headers: { 'x-auth-token': localStorage.getItem('token') }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setApplications(data);
+      } else {
+        setError("Failed to fetch applications");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Server error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateStatus = async (appId, newStatus) => {
+    try {
+      setUpdatingId(appId);
+      const res = await fetch(`http://localhost:3000/api/applications/${appId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': localStorage.getItem('token')
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (res.ok) {
+        setSuccess("Status updated successfully");
+        fetchApplications();
+        setTimeout(() => setSuccess(""), 3000);
+      } else {
+        const data = await res.json();
+        setError(data.message || "Failed to update status");
+        setTimeout(() => setError(""), 3000);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Server error");
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const filteredApps = applications.filter(app => {
+    const studentName = `${app.studentId?.firstName || ''} ${app.studentId?.lastName || ''}`.toLowerCase();
+    const jobTitle = (app.jobId?.title || "Deleted Job").toLowerCase();
+    const companyName = (app.jobId?.company || "").toLowerCase();
+    
+    const matchesSearch = 
+      studentName.includes(searchTerm.toLowerCase()) ||
+      jobTitle.includes(searchTerm.toLowerCase()) ||
+      companyName.includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "ALL" || app.currentStage === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const getNextStage = (currentStage) => {
+    if (currentStage === 'REJECTED' || currentStage === 'SELECTED') return null;
+    const currentIndex = STAGES.findIndex(s => s.id === currentStage);
+    return STAGES[currentIndex + 1]?.id || null;
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-6"
+      className="space-y-8"
     >
-      <h1 className="text-3xl font-display font-bold text-secondary">Applications Management</h1>
-      <div className="bg-white p-8 rounded-[2.5rem] border border-black/5 shadow-sm min-h-[500px] flex items-center justify-center">
-        <p className="text-secondary/40 font-medium italic text-lg">Student Applications Review Placeholder</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-display font-bold text-secondary">Applications Management</h1>
+          <p className="text-secondary/40 font-medium">Review and manage student job applications.</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="px-4 py-2 bg-primary/10 text-primary rounded-xl text-xs font-bold uppercase tracking-widest">
+            Total: {applications.length}
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-col lg:flex-row gap-4 items-stretch">
+        <div className="relative flex-grow">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/40" size={20} />
+          <input 
+            type="text" 
+            placeholder="Search by student, job, or company..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-12 pr-4 py-4 rounded-2xl border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+          />
+        </div>
+        <div className="flex gap-4">
+          <select 
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-6 py-4 rounded-2xl border border-black/5 bg-white hover:bg-[#F8F9FA] transition-all font-semibold focus:outline-none min-w-[200px]"
+          >
+            <option value="ALL">All Statuses</option>
+            {STAGES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+          </select>
+        </div>
+      </div>
+
+      {/* Alerts */}
+      <AnimatePresence>
+        {error && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="p-4 bg-red-50 text-red-600 rounded-2xl flex items-center gap-3">
+            <AlertCircle size={20} /> {error}
+          </motion.div>
+        )}
+        {success && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="p-4 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center gap-3">
+            <CheckCircle2 size={20} /> {success}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Table */}
+      <div className="bg-white rounded-[2.5rem] border border-black/5 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-black/[0.02] border-b border-black/5">
+                <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40">Student</th>
+                <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40">Opportunity</th>
+                <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40">Applied Date</th>
+                <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40">Current Status</th>
+                <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-black/5">
+              {loading ? (
+                <tr>
+                  <td colSpan="5" className="px-8 py-20 text-center">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                      <p className="text-secondary/40 font-medium">Loading applications...</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredApps.length > 0 ? (
+                filteredApps.map((app) => (
+                  <tr key={app._id} className="hover:bg-black/[0.01] transition-colors group">
+                    <td className="px-8 py-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+                          {app.studentId?.firstName?.[0] || '?'}{app.studentId?.lastName?.[0] || '?'}
+                        </div>
+                        <div>
+                          <p className="font-bold text-secondary">{app.studentId?.firstName} {app.studentId?.lastName}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-xs text-secondary/40">{app.studentId?.email}</p>
+                            <span className={`px-2 py-0.5 rounded-md text-[8px] font-bold uppercase tracking-widest ${
+                              app.studentId?.placementStatus === 'PLACED' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                            }`}>
+                              {app.studentId?.placementStatus?.replace('_', ' ')}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-8 py-6">
+                      {app.jobId ? (
+                        <div>
+                          <p className="font-bold text-secondary">{app.jobId.title}</p>
+                          <p className="text-xs text-primary font-medium">{app.jobId.company}</p>
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="font-bold text-red-500">Job Deleted</p>
+                          <p className="text-xs text-secondary/40 italic">No longer available</p>
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-8 py-6">
+                      <p className="text-sm text-secondary/60 font-medium">
+                        {new Date(app.appliedDate).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric'
+                        })}
+                      </p>
+                    </td>
+                    <td className="px-8 py-6">
+                      <span className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest ${
+                        app.currentStage === 'SELECTED' ? 'bg-emerald-50 text-emerald-600' :
+                        app.currentStage === 'REJECTED' ? 'bg-red-50 text-red-600' :
+                        'bg-blue-50 text-blue-600'
+                      }`}>
+                        {STAGES.find(s => s.id === app.currentStage)?.label}
+                      </span>
+                    </td>
+                    <td className="px-8 py-6 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        {getNextStage(app.currentStage) && (
+                          <button 
+                            disabled={updatingId === app._id}
+                            onClick={() => updateStatus(app._id, getNextStage(app.currentStage))}
+                            className="p-2 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-all flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest disabled:opacity-50"
+                          >
+                            <ArrowRight size={14} /> Promote
+                          </button>
+                        )}
+                        {app.currentStage !== 'REJECTED' && app.currentStage !== 'SELECTED' && (
+                          <button 
+                            disabled={updatingId === app._id}
+                            onClick={() => updateStatus(app._id, 'REJECTED')}
+                            className="p-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-all flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest disabled:opacity-50"
+                          >
+                            <XCircle size={14} /> Reject
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="px-8 py-20 text-center">
+                    <p className="text-secondary/40 font-medium italic">No applications found matching your criteria.</p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </motion.div>
   );

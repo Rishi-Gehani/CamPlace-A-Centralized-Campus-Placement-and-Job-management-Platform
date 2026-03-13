@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
-import { User, Mail, Phone, GraduationCap, BookOpen, Award, Code, Briefcase, Shield, CheckCircle2, AlertCircle, Save, Edit2, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { User, Mail, Phone, GraduationCap, BookOpen, Award, Code, Briefcase, Shield, CheckCircle2, AlertCircle, Save, Edit2, X, Building2, MapPin, Calendar } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
+import ApplicationTracker from '../components/ApplicationTracker';
+import { io } from 'socket.io-client';
 
 const SectionHeader = ({ icon: Icon, title }) => (
   <div className="flex items-center gap-3 mb-6 pb-2 border-b border-black/5">
@@ -39,10 +41,26 @@ export default function Profile() {
   const [success, setSuccess] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState(null);
+  const [activeTab, setActiveTab] = useState('profile'); // 'profile' or 'applications'
+  const [myApplications, setMyApplications] = useState([]);
 
   useEffect(() => {
     if (user) {
       fetchProfile();
+      fetchApplications();
+
+      const socket = io();
+      socket.emit('join', user.id);
+
+      socket.on('applicationUpdate', (data) => {
+        setMyApplications(prev => prev.map(app => 
+          app._id === data.applicationId ? { ...app, currentStage: data.status } : app
+        ));
+      });
+
+      return () => {
+        socket.disconnect();
+      };
     }
   }, [user]);
 
@@ -64,6 +82,20 @@ export default function Profile() {
       setError('Failed to load profile');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchApplications = async () => {
+    try {
+      const res = await fetch('http://localhost:3000/api/applications/my', {
+        headers: { 'x-auth-token': localStorage.getItem('token') }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMyApplications(data);
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -157,14 +189,15 @@ export default function Profile() {
               </div>
             </div>
             <div className="flex gap-3">
-              {!isEditing ? (
+              {!isEditing && activeTab === 'profile' && (
                 <button 
                   onClick={() => setIsEditing(true)}
                   className="btn-secondary !py-4 !px-8 flex items-center gap-2 shadow-lg shadow-secondary/20"
                 >
                   <Edit2 size={18} /> Edit Profile
                 </button>
-              ) : (
+              )}
+              {isEditing && (
                 <>
                   <button 
                     onClick={() => setIsEditing(false)}
@@ -183,6 +216,24 @@ export default function Profile() {
               )}
             </div>
           </div>
+
+          {/* Tabs */}
+          <div className="mt-12 flex items-center gap-8 border-b border-black/5">
+            <button 
+              onClick={() => setActiveTab('profile')}
+              className={`pb-4 text-sm font-bold uppercase tracking-widest transition-all relative ${activeTab === 'profile' ? 'text-primary' : 'text-secondary/40 hover:text-secondary'}`}
+            >
+              Profile Details
+              {activeTab === 'profile' && <motion.div layoutId="tab" className="absolute bottom-0 left-0 w-full h-1 bg-primary rounded-full" />}
+            </button>
+            <button 
+              onClick={() => setActiveTab('applications')}
+              className={`pb-4 text-sm font-bold uppercase tracking-widest transition-all relative ${activeTab === 'applications' ? 'text-primary' : 'text-secondary/40 hover:text-secondary'}`}
+            >
+              My Applications
+              {activeTab === 'applications' && <motion.div layoutId="tab" className="absolute bottom-0 left-0 w-full h-1 bg-primary rounded-full" />}
+            </button>
+          </div>
         </motion.div>
 
         {error && (
@@ -197,95 +248,163 @@ export default function Profile() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Personal & Academic */}
-          <div className="lg:col-span-2 space-y-8">
-            <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-black/5">
-              <SectionHeader icon={User} title="Personal Details" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <InputField label="First Name" name="firstName" value={profileData?.firstName} icon={User} onChange={handleChange} isEditing={isEditing} />
-                <InputField label="Last Name" name="lastName" value={profileData?.lastName} icon={User} onChange={handleChange} isEditing={isEditing} />
-                <InputField label="Phone Number" name="phone" value={profileData?.phone} icon={Phone} onChange={handleChange} isEditing={isEditing} />
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-widest text-secondary/40 ml-1">Gender</label>
-                  <select 
-                    name="gender" 
-                    value={profileData?.gender || ''} 
-                    onChange={handleChange}
-                    disabled={!isEditing}
-                    className="w-full px-4 py-3.5 rounded-2xl border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:bg-black/[0.02]"
-                  >
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
+        <AnimatePresence mode="wait">
+          {activeTab === 'profile' ? (
+            <motion.div 
+              key="profile"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+            >
+              {/* Personal & Academic */}
+              <div className="lg:col-span-2 space-y-8">
+                <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-black/5">
+                  <SectionHeader icon={User} title="Personal Details" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <InputField label="First Name" name="firstName" value={profileData?.firstName} icon={User} onChange={handleChange} isEditing={isEditing} />
+                    <InputField label="Last Name" name="lastName" value={profileData?.lastName} icon={User} onChange={handleChange} isEditing={isEditing} />
+                    <InputField label="Phone Number" name="phone" value={profileData?.phone} icon={Phone} onChange={handleChange} isEditing={isEditing} />
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-widest text-secondary/40 ml-1">Gender</label>
+                      <select 
+                        name="gender" 
+                        value={profileData?.gender || ''} 
+                        onChange={handleChange}
+                        disabled={!isEditing}
+                        className="w-full px-4 py-3.5 rounded-2xl border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:bg-black/[0.02]"
+                      >
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-black/5">
+                  <SectionHeader icon={GraduationCap} title="Education & Academic" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <InputField label="Department" name="department" value={profileData?.department} icon={GraduationCap} onChange={handleChange} isEditing={isEditing} />
+                    <InputField label="Degree" name="degree" value={profileData?.degree} icon={BookOpen} onChange={handleChange} isEditing={isEditing} />
+                    <InputField label="Batch Year" name="batch" value={profileData?.batch} type="number" icon={Shield} onChange={handleChange} isEditing={isEditing} />
+                    <InputField label="Student ID" name="studentId" value={profileData?.studentId} icon={User} onChange={handleChange} isEditing={isEditing} />
+                    <InputField label="College Name" name="collegeName" value={profileData?.collegeName} icon={Shield} onChange={handleChange} isEditing={isEditing} />
+                    <InputField label="University" name="university" value={profileData?.university} icon={Shield} onChange={handleChange} isEditing={isEditing} />
+                    <InputField label="Current CGPA" name="cgpa" value={profileData?.cgpa} type="number" icon={Award} onChange={handleChange} isEditing={isEditing} />
+                    <InputField label="Active Backlogs" name="backlogs" value={profileData?.backlogs} type="number" icon={BookOpen} onChange={handleChange} isEditing={isEditing} />
+                    <InputField label="10th Percentage" name="tenthPercentage" value={profileData?.tenthPercentage} type="number" icon={Award} onChange={handleChange} isEditing={isEditing} />
+                    <InputField label="12th Percentage" name="twelfthPercentage" value={profileData?.twelfthPercentage} type="number" icon={Award} onChange={handleChange} isEditing={isEditing} />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-black/5">
-              <SectionHeader icon={GraduationCap} title="Education & Academic" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <InputField label="Department" name="department" value={profileData?.department} icon={GraduationCap} onChange={handleChange} isEditing={isEditing} />
-                <InputField label="Degree" name="degree" value={profileData?.degree} icon={BookOpen} onChange={handleChange} isEditing={isEditing} />
-                <InputField label="Batch Year" name="batch" value={profileData?.batch} type="number" icon={Shield} onChange={handleChange} isEditing={isEditing} />
-                <InputField label="Student ID" name="studentId" value={profileData?.studentId} icon={User} onChange={handleChange} isEditing={isEditing} />
-                <InputField label="College Name" name="collegeName" value={profileData?.collegeName} icon={Shield} onChange={handleChange} isEditing={isEditing} />
-                <InputField label="University" name="university" value={profileData?.university} icon={Shield} onChange={handleChange} isEditing={isEditing} />
-                <InputField label="Current CGPA" name="cgpa" value={profileData?.cgpa} type="number" icon={Award} onChange={handleChange} isEditing={isEditing} />
-                <InputField label="Active Backlogs" name="backlogs" value={profileData?.backlogs} type="number" icon={BookOpen} onChange={handleChange} isEditing={isEditing} />
-                <InputField label="10th Percentage" name="tenthPercentage" value={profileData?.tenthPercentage} type="number" icon={Award} onChange={handleChange} isEditing={isEditing} />
-                <InputField label="12th Percentage" name="twelfthPercentage" value={profileData?.twelfthPercentage} type="number" icon={Award} onChange={handleChange} isEditing={isEditing} />
-              </div>
-            </div>
-          </div>
-
-          {/* Skills & Projects */}
-          <div className="space-y-8">
-            <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-black/5">
-              <SectionHeader icon={Code} title="Skills & Projects" />
-              <div className="space-y-6">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-widest text-secondary/40 ml-1">Skills (Comma separated)</label>
-                  <textarea
-                    name="skills"
-                    value={profileData?.skills || ''}
-                    onChange={handleChange}
-                    disabled={!isEditing}
-                    placeholder="React, Node, MongoDB"
-                    className="w-full px-4 py-4 rounded-2xl border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[120px] disabled:bg-black/[0.02]"
-                  />
+              {/* Skills & Projects */}
+              <div className="space-y-8">
+                <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-black/5">
+                  <SectionHeader icon={Code} title="Skills & Projects" />
+                  <div className="space-y-6">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-widest text-secondary/40 ml-1">Skills (Comma separated)</label>
+                      <textarea
+                        name="skills"
+                        value={profileData?.skills || ''}
+                        onChange={handleChange}
+                        disabled={!isEditing}
+                        placeholder="React, Node, MongoDB"
+                        className="w-full px-4 py-4 rounded-2xl border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[120px] disabled:bg-black/[0.02]"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-widest text-secondary/40 ml-1">Projects (Comma separated)</label>
+                      <textarea
+                        name="projects"
+                        value={profileData?.projects || ''}
+                        onChange={handleChange}
+                        disabled={!isEditing}
+                        placeholder="E-commerce, Portfolio"
+                        className="w-full px-4 py-4 rounded-2xl border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[120px] disabled:bg-black/[0.02]"
+                      />
+                    </div>
+                    <InputField label="Resume URL" name="resumeUrl" value={profileData?.resumeUrl} icon={Mail} onChange={handleChange} isEditing={isEditing} />
+                  </div>
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-widest text-secondary/40 ml-1">Projects (Comma separated)</label>
-                  <textarea
-                    name="projects"
-                    value={profileData?.projects || ''}
-                    onChange={handleChange}
-                    disabled={!isEditing}
-                    placeholder="E-commerce, Portfolio"
-                    className="w-full px-4 py-4 rounded-2xl border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[120px] disabled:bg-black/[0.02]"
-                  />
-                </div>
-                <InputField label="Resume URL" name="resumeUrl" value={profileData?.resumeUrl} icon={Mail} onChange={handleChange} isEditing={isEditing} />
-              </div>
-            </div>
 
-            <div className="bg-secondary rounded-[2.5rem] p-10 text-white space-y-6">
-              <h4 className="text-xl font-bold flex items-center gap-2">
-                <Shield className="text-primary" size={20} /> Account Security
-              </h4>
-              <p className="text-white/60 text-sm">
-                Your profile is currently {profileData?.profileStatus === 'VERIFIED' ? 'verified' : 'under review'}. Verified profiles get priority in job applications.
-              </p>
-              <div className="pt-4">
-                <button className="w-full py-4 bg-white/10 hover:bg-white/20 rounded-2xl font-bold transition-all text-sm">
-                  Change Password
-                </button>
+                <div className="bg-secondary rounded-[2.5rem] p-10 text-white space-y-6">
+                  <h4 className="text-xl font-bold flex items-center gap-2">
+                    <Shield className="text-primary" size={20} /> Account Security
+                  </h4>
+                  <p className="text-white/60 text-sm">
+                    Your profile is currently {profileData?.profileStatus === 'VERIFIED' ? 'verified' : 'under review'}. Verified profiles get priority in job applications.
+                  </p>
+                  <div className="pt-4">
+                    <button className="w-full py-4 bg-white/10 hover:bg-white/20 rounded-2xl font-bold transition-all text-sm">
+                      Change Password
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="applications"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-8"
+            >
+              {myApplications.length > 0 ? (
+                myApplications.map((app) => (
+                  <div key={app._id} className="bg-white rounded-[2.5rem] p-8 border border-black/5 shadow-sm space-y-8">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 rounded-2xl bg-black/5 flex items-center justify-center p-2">
+                          {app.jobId ? (
+                            <img src={app.jobId.companyLogo} alt={app.jobId.company} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                          ) : (
+                            <Briefcase className="text-secondary/20" size={32} />
+                          )}
+                        </div>
+                        <div>
+                          <h3 className="text-2xl font-bold text-secondary">{app.jobId?.title || 'Job Deleted'}</h3>
+                          <p className="text-primary font-bold flex items-center gap-2">
+                            <Building2 size={16} /> {app.jobId?.company || 'N/A'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-4">
+                        <div className="px-4 py-2 bg-black/5 rounded-xl text-xs font-bold text-secondary/60 flex items-center gap-2">
+                          <MapPin size={14} /> {app.jobId?.location || 'N/A'}
+                        </div>
+                        <div className="px-4 py-2 bg-black/5 rounded-xl text-xs font-bold text-secondary/60 flex items-center gap-2">
+                          <Calendar size={14} /> Applied on {new Date(app.appliedDate).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-8 border-t border-black/5">
+                      <h4 className="text-xs font-bold uppercase tracking-widest text-secondary/40 mb-6">Application Progress</h4>
+                      <ApplicationTracker currentStage={app.currentStage} />
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="bg-white rounded-[2.5rem] p-20 text-center border border-black/5 shadow-sm">
+                  <div className="w-20 h-20 rounded-3xl bg-black/5 flex items-center justify-center text-secondary/20 mx-auto mb-6">
+                    <Briefcase size={40} />
+                  </div>
+                  <h3 className="text-2xl font-bold text-secondary mb-2">No applications yet</h3>
+                  <p className="text-secondary/40 max-w-md mx-auto mb-8">
+                    You haven&apos;t applied to any opportunities yet. Start exploring jobs to kickstart your career.
+                  </p>
+                  <Link to="/jobs" className="btn-primary !py-4 !px-10">
+                    Explore Jobs
+                  </Link>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

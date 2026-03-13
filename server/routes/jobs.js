@@ -1,6 +1,7 @@
 import express from 'express';
 const router = express.Router();
 import Job from '../models/Job.js';
+import Application from '../models/Application.js';
 import { adminAuth } from '../middleware/adminAuth.js';
 
 // @route   GET api/jobs
@@ -35,6 +36,11 @@ router.post('/', adminAuth, async (req, res) => {
   try {
     const newJob = new Job(req.body);
     const job = await newJob.save();
+    
+    // Emit real-time update via Socket.io
+    const io = req.app.get('io');
+    io.emit('newJob', job);
+    
     res.json(job);
   } catch (err) {
     console.error(err.message);
@@ -52,6 +58,11 @@ router.put('/:id', adminAuth, async (req, res) => {
       { new: true }
     );
     if (!job) return res.status(404).json({ message: 'Job not found' });
+    
+    // Emit real-time update via Socket.io
+    const io = req.app.get('io');
+    io.emit('jobUpdated', job);
+    
     res.json(job);
   } catch (err) {
     console.error(err.message);
@@ -65,8 +76,18 @@ router.delete('/:id', adminAuth, async (req, res) => {
   try {
     const job = await Job.findById(req.params.id);
     if (!job) return res.status(404).json({ message: 'Job not found' });
+    const jobId = job._id;
+    
+    // Delete associated applications
+    await Application.deleteMany({ jobId: jobId });
+    
     await job.deleteOne();
-    res.json({ message: 'Job removed' });
+    
+    // Emit real-time update via Socket.io
+    const io = req.app.get('io');
+    io.emit('jobDeleted', jobId);
+    
+    res.json({ message: 'Job removed and associated applications deleted' });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
