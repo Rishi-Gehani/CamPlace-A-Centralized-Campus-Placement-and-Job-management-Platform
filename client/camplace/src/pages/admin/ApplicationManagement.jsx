@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Search, CheckCircle2, XCircle, AlertCircle, ArrowRight } from "lucide-react";
+import { Search, CheckCircle2, XCircle, AlertCircle, ArrowRight, Download, Filter } from "lucide-react";
+import * as XLSX from 'xlsx';
 
 const STAGES = [
   { id: 'APPLIED', label: 'Applied' },
@@ -19,6 +20,7 @@ export default function ApplicationManagement() {
   const [success, setSuccess] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [companyFilter, setCompanyFilter] = useState("ALL");
   const [updatingId, setUpdatingId] = useState(null);
 
   useEffect(() => {
@@ -84,8 +86,37 @@ export default function ApplicationManagement() {
       jobTitle.includes(searchTerm.toLowerCase()) ||
       companyName.includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "ALL" || app.currentStage === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesCompany = companyFilter === "ALL" || app.jobId?.company === companyFilter;
+    return matchesSearch && matchesStatus && matchesCompany;
   });
+
+  const companies = [...new Set(applications.map(app => app.jobId?.company).filter(Boolean))].sort();
+
+  const exportToExcel = () => {
+    const dataToExport = filteredApps.map(app => ({
+      'Student Name': `${app.studentId?.firstName || ''} ${app.studentId?.lastName || ''}`,
+      'Email': app.studentId?.email || '',
+      'Job Title': app.jobId?.title || 'Deleted Job',
+      'Company': app.jobId?.company || '',
+      'Applied Date': new Date(app.appliedDate).toLocaleDateString(),
+      'Status': STAGES.find(s => s.id === app.currentStage)?.label || app.currentStage
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Applications");
+
+    let filename = "All_Applications.xlsx";
+    if (companyFilter !== "ALL" && statusFilter !== "ALL") {
+      filename = `${companyFilter}_${statusFilter}.xlsx`;
+    } else if (companyFilter !== "ALL") {
+      filename = `${companyFilter}_Applications.xlsx`;
+    } else if (statusFilter !== "ALL") {
+      filename = `Applications_${statusFilter}.xlsx`;
+    }
+
+    XLSX.writeFile(workbook, filename);
+  };
 
   const getNextStage = (currentStage) => {
     if (currentStage === 'REJECTED' || currentStage === 'SELECTED') return null;
@@ -105,6 +136,12 @@ export default function ApplicationManagement() {
           <p className="text-secondary/40 font-medium">Review and manage student job applications.</p>
         </div>
         <div className="flex items-center gap-3">
+          <button 
+            onClick={exportToExcel}
+            className="btn-secondary !py-2.5 !px-5 flex items-center gap-2 text-sm shadow-sm"
+          >
+            <Download size={18} /> Export Excel
+          </button>
           <div className="px-4 py-2 bg-primary/10 text-primary rounded-xl text-xs font-bold uppercase tracking-widest">
             Total: {applications.length}
           </div>
@@ -124,14 +161,30 @@ export default function ApplicationManagement() {
           />
         </div>
         <div className="flex gap-4">
-          <select 
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-6 py-4 rounded-2xl border border-black/5 bg-white hover:bg-[#F8F9FA] transition-all font-semibold focus:outline-none min-w-[200px]"
-          >
-            <option value="ALL">All Statuses</option>
-            {STAGES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
-          </select>
+          <div className="relative">
+            <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/40" size={18} />
+            <select 
+              value={companyFilter}
+              onChange={(e) => setCompanyFilter(e.target.value)}
+              className="pl-12 pr-6 py-4 rounded-2xl border border-black/5 bg-white hover:bg-[#F8F9FA] transition-all font-semibold focus:outline-none min-w-[200px] appearance-none"
+            >
+              <option value="ALL">All Companies</option>
+              {companies.map(company => (
+                <option key={company} value={company}>{company}</option>
+              ))}
+            </select>
+          </div>
+          <div className="relative">
+            <AlertCircle className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/40" size={18} />
+            <select 
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="pl-12 pr-6 py-4 rounded-2xl border border-black/5 bg-white hover:bg-[#F8F9FA] transition-all font-semibold focus:outline-none min-w-[200px] appearance-none"
+            >
+              <option value="ALL">All Statuses</option>
+              {STAGES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+            </select>
+          </div>
         </div>
       </div>
 
