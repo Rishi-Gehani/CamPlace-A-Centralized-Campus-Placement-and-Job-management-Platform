@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Plus, Search, Filter, Briefcase, Building2, MapPin, 
-  DollarSign, Calendar, Trash2, Edit2, X, AlertCircle,
+  Calendar, Trash2, Edit2, X, AlertCircle,
   CheckCircle2, Clock, Info, ChevronRight, Tags, ListChecks
 } from 'lucide-react';
 import JobForm from '../../components/admin/JobForm';
@@ -187,34 +187,64 @@ export default function JobManagement() {
           )}
         </AnimatePresence>
 
-        {/* Jobs Grid */}
+        {/* Jobs List */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
             <p className="text-secondary/40 font-medium">Loading opportunities...</p>
           </div>
         ) : filteredJobs.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-4">
             {filteredJobs.map((job) => (
               <motion.div 
                 key={job._id}
                 layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-white rounded-[2rem] p-6 border border-black/5 shadow-sm hover:shadow-xl hover:shadow-primary/5 transition-all group"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-3xl p-5 border border-black/5 shadow-sm hover:shadow-md transition-all group flex flex-col md:flex-row items-center gap-6"
               >
-                <div className="flex items-start justify-between mb-6">
-                  <div className="w-14 h-14 rounded-2xl overflow-hidden border border-black/5 bg-white p-2 flex items-center justify-center shadow-sm">
-                    <img 
-                      src={job.companyLogo} 
-                      alt={job.company} 
-                      className="w-full h-full object-contain"
-                      onError={(e) => {
-                        e.target.src = 'https://picsum.photos/seed/company/100/100';
-                      }}
-                    />
+                <div className="w-16 h-16 rounded-2xl overflow-hidden border border-black/5 bg-white p-2 flex items-center justify-center shadow-sm shrink-0">
+                  <img 
+                    src={job.companyLogo} 
+                    alt={job.company} 
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      e.target.src = 'https://picsum.photos/seed/company/100/100';
+                    }}
+                  />
+                </div>
+
+                <div className="flex-1 min-w-0 text-center md:text-left">
+                  <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-2">
+                    <h3 className="text-lg font-bold text-secondary group-hover:text-primary transition-colors truncate">{job.title}</h3>
+                    <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
+                      job.type === 'Job' ? 'bg-indigo-50 text-indigo-600' : 'bg-amber-50 text-amber-600'
+                    }`}>
+                      {job.type}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap justify-center md:justify-start gap-y-2 gap-x-6 text-sm text-secondary/60 font-medium">
+                    <span className="flex items-center gap-1.5"><Building2 size={14} /> {job.company}</span>
+                    <span className="flex items-center gap-1.5"><MapPin size={14} /> {job.location}</span>
+                    <span className="flex items-center gap-1.5 font-bold text-secondary"><span className="text-primary">₹</span> {job.salary}</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-center md:items-end gap-2 shrink-0">
+                  <div className="flex items-center gap-2 text-secondary/40 mb-1">
+                    <Calendar size={14} />
+                    <span className="text-xs font-bold">Ends: {new Date(job.deadline).toLocaleDateString()}</span>
                   </div>
                   <div className="flex gap-2">
+                    <button 
+                      onClick={() => {
+                        setSelectedJob(job);
+                        setIsViewOpen(true);
+                      }}
+                      className="px-4 py-2 rounded-xl bg-primary/10 text-primary font-bold text-xs hover:bg-primary hover:text-white transition-all"
+                    >
+                      View Details
+                    </button>
                     <button 
                       onClick={() => {
                         setSelectedJob(job);
@@ -236,43 +266,6 @@ export default function JobManagement() {
                       <Trash2 size={18} />
                     </button>
                   </div>
-                </div>
-
-                <div className="space-y-1 mb-4">
-                  <h3 className="text-xl font-bold text-secondary group-hover:text-primary transition-colors line-clamp-1">{job.title}</h3>
-                  <p className="text-secondary/60 font-medium flex items-center gap-1.5">
-                    <Building2 size={14} /> {job.company}
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap gap-3 mb-6">
-                  <div className="px-3 py-1 rounded-lg bg-black/5 text-[10px] font-bold uppercase tracking-widest text-secondary/60 flex items-center gap-1.5">
-                    <MapPin size={12} /> {job.location}
-                  </div>
-                  <div className="px-3 py-1 rounded-lg bg-black/5 text-[10px] font-bold uppercase tracking-widest text-secondary/60 flex items-center gap-1.5">
-                    <DollarSign size={12} /> {job.salary}
-                  </div>
-                  <div className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 ${
-                    job.type === 'Job' ? 'bg-indigo-50 text-indigo-600' : 'bg-amber-50 text-amber-600'
-                  }`}>
-                    <Clock size={12} /> {job.type}
-                  </div>
-                </div>
-
-                <div className="pt-6 border-t border-black/5 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-secondary/40">
-                    <Calendar size={14} />
-                    <span className="text-xs font-bold">Ends: {new Date(job.deadline).toLocaleDateString()}</span>
-                  </div>
-                  <button 
-                    onClick={() => {
-                      setSelectedJob(job);
-                      setIsViewOpen(true);
-                    }}
-                    className="text-primary font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all"
-                  >
-                    Details <ChevronRight size={16} />
-                  </button>
                 </div>
               </motion.div>
             ))}
@@ -378,6 +371,31 @@ export default function JobManagement() {
                       <p className="font-bold text-secondary">{new Date(selectedJob.deadline).toLocaleDateString()}</p>
                     </div>
                   </div>
+
+                  {/* Interview Details (if available) */}
+                  {(selectedJob.interviewDate || selectedJob.interviewTime) && (
+                    <div className="p-6 rounded-[2rem] bg-primary/5 border border-primary/10 flex flex-col md:flex-row md:items-center gap-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center">
+                          <Calendar size={24} />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-primary/60 mb-0.5">Interview Date</p>
+                          <p className="font-bold text-secondary">{selectedJob.interviewDate ? new Date(selectedJob.interviewDate).toLocaleDateString() : 'TBD'}</p>
+                        </div>
+                      </div>
+                      <div className="hidden md:block w-px h-8 bg-primary/20" />
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center">
+                          <Clock size={24} />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-primary/60 mb-0.5">Interview Time</p>
+                          <p className="font-bold text-secondary">{selectedJob.interviewTime || 'TBD'}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="space-y-3">
                     <h4 className="text-sm font-bold uppercase tracking-widest text-secondary/40 flex items-center gap-2">

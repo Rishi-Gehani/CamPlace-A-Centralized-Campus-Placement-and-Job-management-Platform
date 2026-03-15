@@ -95,13 +95,18 @@ router.put('/:id/status', adminAuth, async (req, res) => {
     if (!application) return res.status(404).json({ message: 'Application not found' });
 
     // Rule B: Stage Transition Logic (Strict)
-    if (status !== 'REJECTED') {
+    if (status === 'REJECTED') {
+      // Capture the stage they were at before being rejected
+      application.rejectedAtStage = application.currentStage;
+    } else {
       const currentIndex = stages.indexOf(application.currentStage);
       const nextIndex = stages.indexOf(status);
 
       if (nextIndex !== currentIndex + 1) {
         return res.status(400).json({ message: 'Invalid stage transition' });
       }
+      // If they were previously rejected and now promoted (unlikely but for safety)
+      application.rejectedAtStage = null;
     }
 
     application.currentStage = status;
@@ -116,7 +121,8 @@ router.put('/:id/status', adminAuth, async (req, res) => {
     const io = req.app.get('io');
     io.to(application.studentId.toString()).emit('applicationUpdate', { 
       applicationId: application._id, 
-      status 
+      status,
+      rejectedAtStage: application.rejectedAtStage
     });
 
     res.json(application);

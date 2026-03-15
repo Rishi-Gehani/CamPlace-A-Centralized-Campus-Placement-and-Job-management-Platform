@@ -2,6 +2,8 @@
 import express from 'express';
 const router = express.Router();
 import User from '../models/User.js';
+import Job from '../models/Job.js';
+import Application from '../models/Application.js';
 import { adminAuth } from '../middleware/adminAuth.js';
 import { sendEmail } from '../utils/sendEmail.js';
 
@@ -154,14 +156,116 @@ router.put('/students/verify/:id', adminAuth, async (req, res) => {
   }
 });
 
+// Get dashboard analytics
+router.get('/analytics', adminAuth, async (req, res) => {
+  try {
+    const [students, jobs, applications] = await Promise.all([
+      User.find({ role: 'student' }),
+      Job.find({ deadline: { $gt: new Date() } }),
+      Application.find().populate('jobId')
+    ]);
+
+    const stats = {
+      totalStudents: students.length,
+      pendingVerifications: students.filter(s => s.profileStatus === 'PENDING').length,
+      activeJobs: jobs.length,
+      totalApplications: applications.length
+    };
+
+    // 1. Application Pipeline
+    const pipelineStages = [
+      'APPLIED', 'SHORTLISTED', 'INTERVIEW_ROUND_1', 'INTERVIEW_ROUND_2', 'INTERVIEW_ROUND_3', 'SELECTED', 'REJECTED'
+    ];
+    const pipelineData = pipelineStages.map(stage => ({
+      name: stage.replace(/_/g, ' '),
+      value: applications.filter(app => app.currentStage === stage).length
+    }));
+
+    // 2. Company-wise Applications
+    const companyApps = {};
+    applications.forEach(app => {
+      const companyName = app.jobId?.company || 'Unknown Company';
+      companyApps[companyName] = (companyApps[companyName] || 0) + 1;
+    });
+    const companyAppsData = Object.entries(companyApps).map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 10);
+
+    // 3. Placement Success Rate (with percentages)
+    const selectedCount = applications.filter(app => app.currentStage === 'SELECTED').length;
+    const rejectedCount = applications.filter(app => app.currentStage === 'REJECTED').length;
+    const inProgressCount = applications.filter(app => app.currentStage && !['SELECTED', 'REJECTED'].includes(app.currentStage)).length;
+    const total = applications.length || 1;
+
+    const successRateData = [
+      { name: 'Selected', value: selectedCount, percentage: ((selectedCount / total) * 100).toFixed(1) },
+      { name: 'Rejected', value: rejectedCount, percentage: ((rejectedCount / total) * 100).toFixed(1) },
+      { name: 'In Progress', value: inProgressCount, percentage: ((inProgressCount / total) * 100).toFixed(1) }
+    ];
+
+    // 4. Top Hiring Companies
+    const hiringCompanies = {};
+    applications.filter(app => app.currentStage === 'SELECTED').forEach(app => {
+      const companyName = app.jobId?.company || 'Unknown Company';
+      hiringCompanies[companyName] = (hiringCompanies[companyName] || 0) + 1;
+    });
+    const topHiringData = Object.entries(hiringCompanies).map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5);
+
+    // 5. Role Distribution
+    const roles = {};
+    applications.forEach(app => {
+      const roleTitle = app.jobId?.title || 'Unknown Role';
+      roles[roleTitle] = (roles[roleTitle] || 0) + 1;
+    });
+    const roleDistributionData = Object.entries(roles).map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5);
+
+    // 6. Stage-wise Rejection (Real data from rejectedAtStage)
+    const rejectionStages = ['APPLIED', 'SHORTLISTED', 'INTERVIEW_ROUND_1', 'INTERVIEW_ROUND_2', 'INTERVIEW_ROUND_3'];
+    const stageRejectionData = rejectionStages.map(stage => ({
+      name: stage === 'INTERVIEW_ROUND_1' ? 'Aptitude' : 
+            stage === 'INTERVIEW_ROUND_2' ? 'Technical' : 
+            stage === 'INTERVIEW_ROUND_3' ? 'HR' : 
+            stage.charAt(0) + stage.slice(1).toLowerCase(),
+      value: applications.filter(app => app.currentStage === 'REJECTED' && app.rejectedAtStage === stage).length
+    }));
+
+    res.json({
+      stats,
+      charts: {
+        pipeline: pipelineData,
+        companyApps: companyAppsData,
+        successRate: successRateData,
+        topHiring: topHiringData,
+        roleDistribution: roleDistributionData,
+        stageRejection: stageRejectionData
+      }
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
 // Delete student
 router.delete('/students/:id', adminAuth, async (req, res) => {
   try {
-    const student = await User.findByIdAndDelete(req.params.id);
+    const studentId = req.params.id;
+    
+    // Delete all applications associated with this student
+    await Application.deleteMany({ studentId });
+    
+    // Delete the student
+    const student = await User.findByIdAndDelete(studentId);
+    
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
     }
-    res.json({ message: 'Student deleted successfully' });
+    
+    res.json({ message: 'Student and all associated data deleted successfully' });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');

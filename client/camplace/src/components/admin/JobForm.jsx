@@ -19,7 +19,9 @@ export default function JobForm({ initialData, onSubmit, onCancel, loading }) {
     eligibility: '',
     deadline: '',
     tags: [],
-    interviewRounds: ['Aptitude', 'Technical', 'HR']
+    interviewRounds: ['Aptitude', 'Technical', 'HR'],
+    interviewDate: '',
+    interviewTime: ''
   });
 
   useEffect(() => {
@@ -27,7 +29,9 @@ export default function JobForm({ initialData, onSubmit, onCancel, loading }) {
       if (initialData) {
         setFormData({
           ...initialData,
-          deadline: initialData.deadline ? new Date(initialData.deadline).toISOString().split('T')[0] : ''
+          deadline: initialData.deadline ? new Date(initialData.deadline).toISOString().split('T')[0] : '',
+          interviewDate: initialData.interviewDate ? new Date(initialData.interviewDate).toISOString().split('T')[0] : '',
+          interviewTime: initialData.interviewTime || ''
         });
       }
     };
@@ -218,6 +222,32 @@ export default function JobForm({ initialData, onSubmit, onCancel, loading }) {
           </div>
         </div>
 
+        {/* Interview Date & Time */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold uppercase tracking-widest text-secondary/40 ml-1">Interview Date</label>
+            <input
+              type="date"
+              name="interviewDate"
+              value={formData.interviewDate}
+              onChange={handleChange}
+              className="w-full px-4 py-3.5 rounded-2xl border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold uppercase tracking-widest text-secondary/40 ml-1">Interview Time</label>
+            <input
+              type="time"
+              name="interviewTime"
+              value={formData.interviewTime}
+              onChange={handleChange}
+              className="w-full px-4 py-3.5 rounded-2xl border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Tags */}
         <div className="space-y-1.5">
           <label className="text-xs font-bold uppercase tracking-widest text-secondary/40 ml-1">Tags</label>

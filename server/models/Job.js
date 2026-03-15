@@ -54,6 +54,14 @@ const JobSchema = new mongoose.Schema({
     type: [String],
     default: ['Aptitude', 'Technical', 'HR']
   },
+  interviewDate: {
+    type: Date,
+    default: null
+  },
+  interviewTime: {
+    type: String,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now
