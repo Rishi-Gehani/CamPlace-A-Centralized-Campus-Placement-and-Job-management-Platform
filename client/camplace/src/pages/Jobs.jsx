@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Search, Filter, Clock, XCircle, X, Info, ListChecks, Tags, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Search, Filter, Clock, XCircle, X, Info, ListChecks, Tags, AlertCircle, CheckCircle2, Building2, MapPin, Calendar } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { Navigate, Link } from "react-router-dom";
-import JobCard from "../components/JobCard";
 import { io } from 'socket.io-client';
 
 export default function Jobs() {
@@ -17,6 +16,7 @@ export default function Jobs() {
   // Search & Filter
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
+  const [statusFilter, setStatusFilter] = useState("All"); // All, Applied, Closed
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   
   // Modal
@@ -44,11 +44,11 @@ export default function Jobs() {
 
       socket.on('jobUpdated', (updatedJob) => {
         setJobs(prev => prev.map(job => job._id === updatedJob._id ? updatedJob : job));
-        setSelectedJob(prev => prev?._id === jobId ? null : prev);
       });
 
       socket.on('jobDeleted', (jobId) => {
         setJobs(prev => prev.filter(job => job._id !== jobId));
+        setSelectedJob(prev => prev?._id === jobId ? null : prev);
       });
 
       return () => {
@@ -164,7 +164,16 @@ export default function Jobs() {
     const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          job.company.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesTags = selectedTags.length === 0 || selectedTags.every(tag => job.tags.includes(tag));
-    return matchesSearch && matchesTags;
+    
+    // Status filter logic
+    let matchesStatus = true;
+    const isApplied = myApplications.some(app => app.jobId?._id === job._id);
+    const isClosed = new Date() > new Date(job.deadline);
+
+    if (statusFilter === 'Applied') matchesStatus = isApplied;
+    else if (statusFilter === 'Closed') matchesStatus = isClosed;
+    
+    return matchesSearch && matchesTags && matchesStatus;
   });
 
   return (
@@ -218,6 +227,21 @@ export default function Jobs() {
               />
             </div>
             <div className="flex gap-4">
+              <div className="flex bg-white rounded-2xl border border-black/5 p-1 shadow-sm shrink-0">
+                {['All', 'Applied', 'Closed'].map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => setStatusFilter(status)}
+                    className={`px-6 py-3 rounded-xl text-sm font-bold transition-all ${
+                      statusFilter === status 
+                        ? 'bg-secondary text-white shadow-md' 
+                        : 'text-secondary/40 hover:bg-black/5'
+                    }`}
+                  >
+                    {status}
+                  </button>
+                ))}
+              </div>
               <button 
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
                 className={`flex items-center gap-2 px-6 py-4 rounded-2xl border transition-all font-semibold ${
@@ -225,7 +249,7 @@ export default function Jobs() {
                 }`}
               >
                 <Filter size={18} />
-                <span>Filters {selectedTags.length > 0 && `(${selectedTags.length})`}</span>
+                <span>Tags {selectedTags.length > 0 && `(${selectedTags.length})`}</span>
               </button>
             </div>
           </div>
@@ -295,18 +319,137 @@ export default function Jobs() {
             <p className="text-secondary/40 font-medium">Loading opportunities...</p>
           </div>
         ) : filteredJobs.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredJobs.map((job) => (
-              <JobCard 
-                key={job._id}
-                job={job}
-                onApply={handleApply}
-                onViewDetails={setSelectedJob}
-                isApplied={myApplications.some(app => app.jobId?._id === job._id)}
-                isPlaced={isPlaced}
-                isExpired={new Date() > new Date(job.deadline)}
-              />
-            ))}
+          <div className="space-y-4">
+            {filteredJobs.map((job) => {
+              const application = myApplications.find(app => app.jobId?._id === job._id);
+              const isApplied = !!application;
+              const isExpired = new Date() > new Date(job.deadline);
+              
+              const getStatusBadge = () => {
+                if (!isApplied) return null;
+                if (application.currentStage === 'REJECTED') {
+                  return (
+                    <span className="inline-flex px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-red-50 text-red-600">
+                      Rejected
+                    </span>
+                  );
+                }
+                if (application.currentStage === 'SELECTED') {
+                  return (
+                    <span className="inline-flex px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-600">
+                      Placed
+                    </span>
+                  );
+                }
+                return (
+                  <span className="inline-flex px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-600">
+                    Applied
+                  </span>
+                );
+              };
+
+              const getStatusButton = () => {
+                if (!isApplied) return null;
+                if (application.currentStage === 'REJECTED') {
+                  return (
+                    <button 
+                      disabled
+                      className="px-8 py-2.5 rounded-xl bg-red-50 text-red-600 font-bold text-sm cursor-not-allowed"
+                    >
+                      Rejected
+                    </button>
+                  );
+                }
+                if (application.currentStage === 'SELECTED') {
+                  return (
+                    <button 
+                      disabled
+                      className="px-8 py-2.5 rounded-xl bg-emerald-50 text-emerald-600 font-bold text-sm cursor-not-allowed"
+                    >
+                      Placed
+                    </button>
+                  );
+                }
+                return (
+                  <button 
+                    disabled
+                    className="px-8 py-2.5 rounded-xl bg-emerald-50 text-emerald-600 font-bold text-sm cursor-not-allowed"
+                  >
+                    Applied
+                  </button>
+                );
+              };
+              
+              return (
+                <motion.div 
+                  key={job._id}
+                  layout
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white rounded-3xl p-5 border border-black/5 shadow-sm hover:shadow-md transition-all group flex flex-col md:flex-row items-center gap-6"
+                >
+                  <div className="w-16 h-16 rounded-2xl overflow-hidden border border-black/5 bg-white p-2 flex items-center justify-center shadow-sm shrink-0">
+                    <img 
+                      src={job.companyLogo} 
+                      alt={job.company} 
+                      className="w-full h-full object-contain"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        e.target.src = 'https://picsum.photos/seed/company/100/100';
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex-1 min-w-0 text-center md:text-left">
+                    <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-2">
+                      <h3 className="text-lg font-bold text-secondary group-hover:text-primary transition-colors truncate">{job.title}</h3>
+                      <div className="flex gap-2 justify-center md:justify-start">
+                        <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
+                          job.type === 'Job' ? 'bg-indigo-50 text-indigo-600' : 'bg-amber-50 text-amber-600'
+                        }`}>
+                          {job.type}
+                        </span>
+                        {getStatusBadge()}
+                        {isExpired && (
+                          <span className="inline-flex px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-red-50 text-red-600">
+                            Closed
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap justify-center md:justify-start gap-y-2 gap-x-6 text-sm text-secondary/60 font-medium">
+                      <span className="flex items-center gap-1.5"><Building2 size={14} /> {job.company}</span>
+                      <span className="flex items-center gap-1.5"><MapPin size={14} /> {job.location}</span>
+                      <span className="flex items-center gap-1.5 font-bold text-secondary"><span className="text-primary">₹</span> {job.salary}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-center md:items-end gap-2 shrink-0">
+                    <div className="flex items-center gap-2 text-secondary/40 mb-1">
+                      <Calendar size={14} />
+                      <span className="text-xs font-bold">Ends: {new Date(job.deadline).toLocaleDateString()}</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => setSelectedJob(job)}
+                        className="px-6 py-2.5 rounded-xl bg-black/5 text-secondary font-bold text-sm hover:bg-black/10 transition-all"
+                      >
+                        Details
+                      </button>
+                      {!isApplied && !isPlaced && !isExpired && (
+                        <button 
+                          onClick={() => handleApply(job._id)}
+                          className="px-8 py-2.5 rounded-xl bg-primary text-secondary font-bold text-sm hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
+                        >
+                          Apply Now
+                        </button>
+                      )}
+                      {getStatusButton()}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         ) : (
           <div className="bg-white rounded-[2.5rem] p-20 text-center border border-black/5 shadow-sm">
@@ -360,6 +503,31 @@ export default function Jobs() {
                     <p className="font-bold text-secondary">{new Date(selectedJob.deadline).toLocaleDateString()}</p>
                   </div>
                 </div>
+
+                {/* Interview Details (if available) */}
+                {(selectedJob.interviewDate || selectedJob.interviewTime) && (
+                  <div className="p-6 rounded-[2rem] bg-primary/5 border border-primary/10 flex flex-col md:flex-row md:items-center gap-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center">
+                        <Calendar size={24} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-primary/60 mb-0.5">Interview Date</p>
+                        <p className="font-bold text-secondary">{selectedJob.interviewDate ? new Date(selectedJob.interviewDate).toLocaleDateString() : 'TBD'}</p>
+                      </div>
+                    </div>
+                    <div className="hidden md:block w-px h-8 bg-primary/20" />
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center">
+                        <Clock size={24} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-primary/60 mb-0.5">Interview Time</p>
+                        <p className="font-bold text-secondary">{selectedJob.interviewTime || 'TBD'}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-3">
                   <h4 className="text-sm font-bold uppercase tracking-widest text-secondary/40 flex items-center gap-2">

@@ -99,7 +99,8 @@ export default function ApplicationManagement() {
       'Job Title': app.jobId?.title || 'Deleted Job',
       'Company': app.jobId?.company || '',
       'Applied Date': new Date(app.appliedDate).toLocaleDateString(),
-      'Status': STAGES.find(s => s.id === app.currentStage)?.label || app.currentStage
+      'Status': STAGES.find(s => s.id === app.currentStage)?.label || app.currentStage,
+      'Rejected At': app.currentStage === 'REJECTED' ? (STAGES.find(s => s.id === app.rejectedAtStage)?.label || app.rejectedAtStage) : 'N/A'
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
@@ -211,7 +212,8 @@ export default function ApplicationManagement() {
                 <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40">Student</th>
                 <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40">Opportunity</th>
                 <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40">Applied Date</th>
-                <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40">Current Status</th>
+                <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40">Status</th>
+                <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40">Last Stage</th>
                 <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40 text-right">Actions</th>
               </tr>
             </thead>
@@ -276,6 +278,15 @@ export default function ApplicationManagement() {
                       }`}>
                         {STAGES.find(s => s.id === app.currentStage)?.label}
                       </span>
+                    </td>
+                    <td className="px-8 py-6">
+                      {app.currentStage === 'REJECTED' ? (
+                        <span className="text-xs font-bold text-red-400 uppercase tracking-wider">
+                          {STAGES.find(s => s.id === app.rejectedAtStage)?.label || 'N/A'}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-secondary/20">—</span>
+                      )}
                     </td>
                     <td className="px-8 py-6 text-right">
                       <div className="flex items-center justify-end gap-2">

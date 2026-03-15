@@ -27,6 +27,17 @@ const ApplicationSchema = new mongoose.Schema({
       'REJECTED'
     ],
     default: 'APPLIED'
+  },
+  rejectedAtStage: {
+    type: String,
+    enum: [
+      'APPLIED', 
+      'SHORTLISTED', 
+      'INTERVIEW_ROUND_1', 
+      'INTERVIEW_ROUND_2', 
+      'INTERVIEW_ROUND_3'
+    ],
+    default: null
   }
 });
 

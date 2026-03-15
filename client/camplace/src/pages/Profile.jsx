@@ -55,7 +55,7 @@ export default function Profile() {
 
       socket.on('applicationUpdate', (data) => {
         setMyApplications(prev => prev.map(app => 
-          app._id === data.applicationId ? { ...app, currentStage: data.status } : app
+          app._id === data.applicationId ? { ...app, currentStage: data.status, rejectedAtStage: data.rejectedAtStage } : app
         ));
       });
 
@@ -438,7 +438,7 @@ export default function Profile() {
 
                     <div className="pt-8 border-t border-black/5">
                       <h4 className="text-xs font-bold uppercase tracking-widest text-secondary/40 mb-6">Application Progress</h4>
-                      <ApplicationTracker currentStage={app.currentStage} />
+                      <ApplicationTracker currentStage={app.currentStage} rejectedAtStage={app.rejectedAtStage} />
                     </div>
                   </div>
                 ))
