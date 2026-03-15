@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { User, Mail, Phone, GraduationCap, BookOpen, Award, Code, Briefcase, Shield, CheckCircle2, AlertCircle, Save, Edit2, X, Building2, MapPin, Calendar } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { Navigate, Link } from 'react-router-dom';
+import { DEPARTMENTS, COLLEGES } from '../constants/education';
 import ApplicationTracker from '../components/ApplicationTracker';
 import { io } from 'socket.io-client';
 
@@ -285,16 +286,69 @@ export default function Profile() {
                 <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-black/5">
                   <SectionHeader icon={GraduationCap} title="Education & Academic" />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <InputField label="Department" name="department" value={profileData?.department} icon={GraduationCap} onChange={handleChange} isEditing={isEditing} />
-                    <InputField label="Degree" name="degree" value={profileData?.degree} icon={BookOpen} onChange={handleChange} isEditing={isEditing} />
-                    <InputField label="Batch Year" name="batch" value={profileData?.batch} type="number" icon={Shield} onChange={handleChange} isEditing={isEditing} />
-                    <InputField label="Student ID" name="studentId" value={profileData?.studentId} icon={User} onChange={handleChange} isEditing={isEditing} />
-                    <InputField label="College Name" name="collegeName" value={profileData?.collegeName} icon={Shield} onChange={handleChange} isEditing={isEditing} />
-                    <InputField label="University" name="university" value={profileData?.university} icon={Shield} onChange={handleChange} isEditing={isEditing} />
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-widest text-secondary/40 ml-1">Department</label>
+                      <div className="relative">
+                        <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" size={18} />
+                        <select 
+                          name="department" 
+                          value={profileData?.department || ''} 
+                          onChange={(e) => {
+                            setProfileData({ ...profileData, department: e.target.value, degree: '' });
+                          }}
+                          disabled={true}
+                          className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-black/5 bg-black/[0.02] text-secondary/60 shadow-sm focus:outline-none transition-all"
+                        >
+                          <option value="">Select Department</option>
+                          {Object.keys(DEPARTMENTS).map(dept => (
+                            <option key={dept} value={dept}>{dept}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-widest text-secondary/40 ml-1">Degree</label>
+                      <div className="relative">
+                        <BookOpen className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" size={18} />
+                        <select 
+                          name="degree" 
+                          value={profileData?.degree || ''} 
+                          onChange={handleChange}
+                          disabled={true}
+                          className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-black/5 bg-black/[0.02] text-secondary/60 shadow-sm focus:outline-none transition-all"
+                        >
+                          <option value="">Select Degree</option>
+                          {profileData?.department && DEPARTMENTS[profileData.department]?.map(degree => (
+                            <option key={degree} value={degree}>{degree}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <InputField label="Batch Year" name="batch" value={profileData?.batch} type="number" icon={Shield} onChange={handleChange} isEditing={false} />
+                    <InputField label="Student ID" name="studentId" value={profileData?.studentId} icon={User} onChange={handleChange} isEditing={false} />
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-widest text-secondary/40 ml-1">College Name</label>
+                      <div className="relative">
+                        <Shield className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" size={18} />
+                        <select 
+                          name="collegeName" 
+                          value={profileData?.collegeName || ''} 
+                          onChange={handleChange}
+                          disabled={true}
+                          className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-black/5 bg-black/[0.02] text-secondary/60 shadow-sm focus:outline-none transition-all"
+                        >
+                          <option value="">Select College</option>
+                          {COLLEGES.map(college => (
+                            <option key={college} value={college}>{college}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <InputField label="University" name="university" value={profileData?.university} icon={Shield} onChange={handleChange} isEditing={false} />
                     <InputField label="Current CGPA" name="cgpa" value={profileData?.cgpa} type="number" icon={Award} onChange={handleChange} isEditing={isEditing} />
                     <InputField label="Active Backlogs" name="backlogs" value={profileData?.backlogs} type="number" icon={BookOpen} onChange={handleChange} isEditing={isEditing} />
-                    <InputField label="10th Percentage" name="tenthPercentage" value={profileData?.tenthPercentage} type="number" icon={Award} onChange={handleChange} isEditing={isEditing} />
-                    <InputField label="12th Percentage" name="twelfthPercentage" value={profileData?.twelfthPercentage} type="number" icon={Award} onChange={handleChange} isEditing={isEditing} />
+                    <InputField label="10th Percentage" name="tenthPercentage" value={profileData?.tenthPercentage} type="number" icon={Award} onChange={handleChange} isEditing={false} />
+                    <InputField label="12th Percentage" name="twelfthPercentage" value={profileData?.twelfthPercentage} type="number" icon={Award} onChange={handleChange} isEditing={false} />
                   </div>
                 </div>
               </div>
