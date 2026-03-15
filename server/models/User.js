@@ -65,7 +65,8 @@ const userSchema = new mongoose.Schema({
   },
   studentId: {
     type: String,
-    trim: true
+    trim: true,
+    unique: true
   },
   skills: {
     type: [String],
