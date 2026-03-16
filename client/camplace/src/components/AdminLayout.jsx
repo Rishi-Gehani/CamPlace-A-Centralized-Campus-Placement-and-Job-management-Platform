@@ -10,7 +10,8 @@ import {
   Shield,
   Menu,
   X,
-  History
+  History,
+  MessageSquare
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
@@ -28,6 +29,7 @@ export default function AdminLayout() {
     { name: "Applications", path: "/admin/applications", icon: FileText },
     { name: "Placement Records", path: "/admin/records", icon: History },
     { name: "Reports & Analytics", path: "/admin/reports", icon: BarChart3 },
+    { name: "Query Resolution", path: "/admin/queries", icon: MessageSquare },
     { name: "Profile", path: "/admin/profile", icon: UserCircle },
   ];
 

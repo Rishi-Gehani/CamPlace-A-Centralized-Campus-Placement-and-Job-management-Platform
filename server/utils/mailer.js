@@ -164,3 +164,88 @@ export const sendRejectedEmail = async (student, job) => {
     console.error('Error sending rejected email:', error);
   }
 };
+
+export const sendQueryConfirmationEmail = async (query) => {
+  const mailOptions = {
+    from: `"CamPlace Support" <${process.env.EMAIL_USER}>`,
+    to: query.email,
+    subject: 'We have received your query - CamPlace Support',
+    html: `
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f3f4f6; padding: 40px 20px;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
+    <div style="background-color: #0f172a; padding: 30px; text-align: center;">
+      <h1 style="color: #ffffff; margin: 0; font-size: 24px; letter-spacing: 1px;">CamPlace</h1>
+    </div>
+    <div style="padding: 40px 30px; color: #374151; line-height: 1.6; font-size: 16px;">
+      <p style="margin-top: 0; font-weight: 600; color: #111827;">Dear ${query.firstName},</p>
+      <p>Thank you for contacting the CamPlace team. We have received your query and our support team is currently reviewing it.</p>
+      <p>We will get back to you with an update or resolution shortly. Thank you for your patience!</p>
+      <br>
+      <p style="margin-bottom: 0;">
+        Best regards,<br>
+        <strong style="color: #111827;">The CamPlace Administration Team</strong>
+      </p>
+    </div>
+    <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+      <p style="margin: 0; font-size: 12px; color: #6b7280;">
+        This is an automated message confirming receipt of your inquiry.
+      </p>
+    </div>
+  </div>
+</div>
+    `
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Query confirmation email sent to ${query.email}`);
+  } catch (error) {
+    console.error('Error sending query confirmation email:', error);
+  }
+};
+
+export const sendQueryReplyEmail = async (query, reply) => {
+  const mailOptions = {
+    from: `"CamPlace Support" <${process.env.EMAIL_USER}>`,
+    to: query.email,
+    subject: `Re: ${query.subject} - CamPlace Support`,
+    html: `
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f3f4f6; padding: 40px 20px;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
+    <div style="background-color: #0f172a; padding: 30px; text-align: center;">
+      <h1 style="color: #ffffff; margin: 0; font-size: 24px; letter-spacing: 1px;">CamPlace</h1>
+    </div>
+    <div style="padding: 40px 30px; color: #374151; line-height: 1.6; font-size: 16px;">
+      <p style="margin-top: 0; font-weight: 600; color: #111827;">Dear ${query.firstName},</p>
+      <p>Our support team has responded to your query regarding "<strong>${query.subject}</strong>".</p>
+      <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 20px 0;">
+        <p style="margin-top: 0; font-weight: 600; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Your Message:</p>
+        <p style="font-style: italic; color: #475569;">"${query.message}"</p>
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;">
+        <p style="margin-top: 0; font-weight: 600; color: #0f172a; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Admin Response:</p>
+        <p style="color: #1e293b; white-space: pre-wrap;">${reply}</p>
+      </div>
+      <p>If you have any further questions, please feel free to reach out to us again.</p>
+      <br>
+      <p style="margin-bottom: 0;">
+        Best regards,<br>
+        <strong style="color: #111827;">The CamPlace Administration Team</strong>
+      </p>
+    </div>
+    <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+      <p style="margin: 0; font-size: 12px; color: #6b7280;">
+        This is an automated message from the CamPlace Placement Portal.
+      </p>
+    </div>
+  </div>
+</div>
+    `
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Query reply email sent to ${query.email}`);
+  } catch (error) {
+    console.error('Error sending query reply email:', error);
+  }
+};
