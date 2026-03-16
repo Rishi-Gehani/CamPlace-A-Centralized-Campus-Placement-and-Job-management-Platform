@@ -40,6 +40,7 @@ router.post('/', adminAuth, async (req, res) => {
     // Emit real-time update via Socket.io
     const io = req.app.get('io');
     io.emit('newJob', job);
+    io.emit('analyticsUpdated');
     
     res.json(job);
   } catch (err) {
@@ -62,6 +63,7 @@ router.put('/:id', adminAuth, async (req, res) => {
     // Emit real-time update via Socket.io
     const io = req.app.get('io');
     io.emit('jobUpdated', job);
+    io.emit('analyticsUpdated');
     
     res.json(job);
   } catch (err) {
@@ -86,6 +88,7 @@ router.delete('/:id', adminAuth, async (req, res) => {
     // Emit real-time update via Socket.io
     const io = req.app.get('io');
     io.emit('jobDeleted', jobId);
+    io.emit('analyticsUpdated');
     
     res.json({ message: 'Job removed and associated applications deleted' });
   } catch (err) {

@@ -8,7 +8,7 @@ export default function ProfileSidebar({ isOpen, onClose }) {
 
   const menuItems = [
     { icon: User, label: 'Manage Profile', path: '/profile' },
-    { icon: History, label: 'Application Tracking', path: '/applications' },
+    { icon: History, label: 'Interview Resources', path: '/interview-resources' },
     { icon: HelpCircle, label: 'Help Manual', path: '/help' },
     { icon: Lock, label: 'Change Password', path: '/change-password' },
   ];

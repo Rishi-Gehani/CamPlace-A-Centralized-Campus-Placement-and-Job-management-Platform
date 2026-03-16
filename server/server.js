@@ -15,7 +15,6 @@ import applicationRoutes from './routes/applications.js';
 import queryRoutes from './routes/queries.js';
 import User from './models/User.js';
 
-dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

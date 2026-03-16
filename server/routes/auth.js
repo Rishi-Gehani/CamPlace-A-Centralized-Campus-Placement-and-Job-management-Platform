@@ -63,6 +63,12 @@ router.post('/register', async (req, res) => {
 
     await user.save();
 
+    // Emit real-time update via Socket.io
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('analyticsUpdated');
+    }
+
     // Send registration email
     sendRegistrationEmail(user);
 

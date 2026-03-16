@@ -127,36 +127,42 @@ export default function JobManagement() {
         </div>
 
         {/* Stats & Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="md:col-span-2 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" size={20} />
-            <input 
-              type="text"
-              placeholder="Search by job title or company..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 rounded-2xl border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-            />
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-8 items-end">
+          <div className="md:col-span-5 relative">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-secondary/40 ml-1 mb-2 block">Search Opportunities</label>
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" size={20} />
+              <input 
+                type="text"
+                placeholder="Search by job title or company..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-12 pr-4 py-4 rounded-2xl border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+              />
+            </div>
           </div>
-          <div className="relative">
-            <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" size={20} />
-            <select 
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 rounded-2xl border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all appearance-none"
-            >
-              <option value="All">All Types</option>
-              <option value="Job">Jobs Only</option>
-              <option value="Internship">Internships Only</option>
-            </select>
+          <div className="md:col-span-4 relative">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-secondary/40 ml-1 mb-2 block">Filter by Type</label>
+            <div className="relative">
+              <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" size={20} />
+              <select 
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="w-full pl-12 pr-4 py-4 rounded-2xl border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all appearance-none font-medium"
+              >
+                <option value="All">All Types</option>
+                <option value="Job">Jobs Only</option>
+                <option value="Internship">Internships Only</option>
+              </select>
+            </div>
           </div>
-          <div className="bg-white p-4 rounded-2xl border border-black/5 shadow-sm flex items-center justify-between">
+          <div className="md:col-span-3 bg-white p-4 rounded-2xl border border-black/5 shadow-sm flex items-center justify-between h-[60px]">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                 <Briefcase size={20} />
               </div>
               <div>
-                <p className="text-xs font-bold text-secondary/40 uppercase tracking-widest">Total Jobs</p>
+                <p className="text-[10px] font-bold text-secondary/40 uppercase tracking-widest">Total Jobs</p>
                 <p className="text-xl font-bold text-secondary">{jobs.length}</p>
               </div>
             </div>

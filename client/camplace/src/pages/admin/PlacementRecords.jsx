@@ -199,13 +199,15 @@ export default function PlacementRecords() {
                       </div>
                     </td>
                     <td className="px-8 py-6">
-                      <span className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest ${
-                        record.currentStage === 'SELECTED' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
+                      <span className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 w-fit ${
+                        record.currentStage === 'SELECTED' 
+                          ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' 
+                          : 'bg-red-500 text-white shadow-lg shadow-red-500/20'
                       }`}>
                         {record.currentStage === 'SELECTED' ? (
-                          <span className="flex items-center gap-1"><CheckCircle2 size={12} /> Selected</span>
+                          <><CheckCircle2 size={14} /> Selected</>
                         ) : (
-                          <span className="flex items-center gap-1"><XCircle size={12} /> Rejected</span>
+                          <><XCircle size={14} /> Rejected</>
                         )}
                       </span>
                     </td>

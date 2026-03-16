@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "motion/react";
+import { io } from "socket.io-client";
 import { Users, Briefcase, FileText, ShieldCheck, TrendingUp, PieChart as PieChartIcon, BarChart as BarChartIcon } from "lucide-react";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
@@ -53,6 +54,18 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchAnalytics();
+    
+    // Connect to Socket.io for real-time updates
+    const socket = io();
+    
+    socket.on('analyticsUpdated', () => {
+      console.log('Analytics updated, fetching new data...');
+      fetchAnalytics();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, [fetchAnalytics]);
 
   if (loading) {
@@ -143,12 +156,21 @@ export default function AdminDashboard() {
         {/* 2. Company-wise Applications */}
         <ChartCard title="Company-wise Applications" icon={BarChartIcon}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={charts?.companyApps || []}>
+            <BarChart data={charts?.companyApps || []} margin={{ bottom: 40 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 600, fill: '#64748b' }} />
+              <XAxis 
+                dataKey="name" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fontSize: 10, fontWeight: 600, fill: '#64748b' }}
+                interval={0}
+                angle={-45}
+                textAnchor="end"
+                height={60}
+              />
               <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fontWeight: 600, fill: '#64748b' }} />
               <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-              <Bar dataKey="value" fill="#8b5cf6" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="value" fill="#8b5cf6" radius={[8, 8, 0, 0]} barSize={40} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -219,12 +241,18 @@ export default function AdminDashboard() {
         {/* 6. Stage-wise Rejection Analysis */}
         <ChartCard title="Stage-wise Rejection Analysis" icon={BarChartIcon}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={charts?.stageRejection || []}>
+            <BarChart data={charts?.stageRejection || []} margin={{ bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fontWeight: 600, fill: '#64748b' }} />
+              <XAxis 
+                dataKey="name" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fontSize: 11, fontWeight: 600, fill: '#64748b' }}
+                interval={0}
+              />
               <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fontWeight: 600, fill: '#64748b' }} />
               <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-              <Bar dataKey="value" fill="#ef4444" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="value" fill="#ef4444" radius={[8, 8, 0, 0]} barSize={50} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>

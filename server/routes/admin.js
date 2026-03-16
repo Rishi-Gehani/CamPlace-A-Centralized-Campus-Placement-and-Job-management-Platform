@@ -53,6 +53,7 @@ router.put('/students/verify/:id', adminAuth, async (req, res) => {
     
     // Also notify admins that a verification was processed
     io.to('admin').emit('verificationProcessed', { studentId: student._id, status });
+    io.emit('analyticsUpdated');
 
     // Send automated email notification
     try {
@@ -263,6 +264,12 @@ router.delete('/students/:id', adminAuth, async (req, res) => {
     
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
+    }
+    
+    // Emit real-time update via Socket.io
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('analyticsUpdated');
     }
     
     res.json({ message: 'Student and all associated data deleted successfully' });

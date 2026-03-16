@@ -11,7 +11,8 @@ import {
   Menu,
   X,
   History,
-  MessageSquare
+  MessageSquare,
+  Bell
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
@@ -28,7 +29,8 @@ export default function AdminLayout() {
     { name: "Jobs & Internships", path: "/admin/jobs", icon: Briefcase },
     { name: "Applications", path: "/admin/applications", icon: FileText },
     { name: "Placement Records", path: "/admin/records", icon: History },
-    { name: "Reports & Analytics", path: "/admin/reports", icon: BarChart3 },
+    { name: "Interview Resources", path: "/admin/reports", icon: BarChart3 },
+    { name: "Notices", path: "/admin/notices", icon: Bell },
     { name: "Query Resolution", path: "/admin/queries", icon: MessageSquare },
     { name: "Profile", path: "/admin/profile", icon: UserCircle },
   ];

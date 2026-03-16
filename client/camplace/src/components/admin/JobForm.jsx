@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react';
-import { X, Save, Building2, MapPin, DollarSign, Calendar, Briefcase, Info } from 'lucide-react';
+import { X, Save, Building2, MapPin, Calendar, Briefcase, Info } from 'lucide-react';
 
 const TAG_OPTIONS = [
-  'Frontend', 'Backend', 'Full Stack', 'Technical Support', 
-  'Data Science', 'DBMS', 'Cybersecurity', 'DevOps', 'Mobile Development'
+  // Department Based Tags
+  'IT', 'Computer Science', 'Business', 'Finance', 'Marketing', 'HR', 'Engineering', 'Management',
+  // Additional Skill/Domain Tags
+  'Web Development', 'Data Science', 'Machine Learning', 'Cybersecurity', 'Cloud Computing', 
+  'DevOps', 'UI/UX', 'Mobile Development', 'Backend Development', 'Software Testing',
+  'Other'
 ];
 
 export default function JobForm({ initialData, onSubmit, onCancel, loading }) {
@@ -54,6 +58,25 @@ export default function JobForm({ initialData, onSubmit, onCancel, loading }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Date Validations
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const deadlineDate = new Date(formData.deadline);
+    
+    if (deadlineDate <= today) {
+      alert("Application deadline must be a future date.");
+      return;
+    }
+
+    if (formData.interviewDate) {
+      const interviewDate = new Date(formData.interviewDate);
+      if (interviewDate <= deadlineDate) {
+        alert("Interview date must be after the application deadline.");
+        return;
+      }
+    }
+
     onSubmit(formData);
   };
 
@@ -132,7 +155,7 @@ export default function JobForm({ initialData, onSubmit, onCancel, loading }) {
           <div className="space-y-1.5">
             <label className="text-xs font-bold uppercase tracking-widest text-secondary/40 ml-1">Salary / Stipend</label>
             <div className="relative">
-              <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" size={18} />
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30 font-bold">₹</div>
               <input
                 required
                 type="text"
