@@ -392,9 +392,12 @@ export default function Profile() {
                     Your profile is currently {profileData?.profileStatus === 'VERIFIED' ? 'verified' : 'under review'}. Verified profiles get priority in job applications.
                   </p>
                   <div className="pt-4">
-                    <button className="w-full py-4 bg-white/10 hover:bg-white/20 rounded-2xl font-bold transition-all text-sm">
+                    <Link 
+                      to="/change-password"
+                      className="w-full py-4 bg-white/10 hover:bg-white/20 rounded-2xl font-bold transition-all text-sm flex items-center justify-center"
+                    >
                       Change Password
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>

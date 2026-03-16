@@ -9,6 +9,7 @@ import Jobs from "./pages/Jobs.jsx";
 import Forum from "./pages/Forum.jsx";
 import Partners from "./pages/Partners.jsx";
 import Profile from "./pages/Profile.jsx";
+import ChangePassword from "./pages/ChangePassword.jsx";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard.jsx";
@@ -36,6 +37,7 @@ export default function App() {
             <Route path="forum" element={<Forum />} />
             <Route path="contact" element={<Contact />} />
             <Route path="profile" element={<Profile />} />
+            <Route path="change-password" element={<ChangePassword />} />
             <Route path="login" element={<Navigate to="/" state={{ openAuth: 'login' }} />} />
             <Route path="register" element={<Navigate to="/" state={{ openAuth: 'register' }} />} />
           </Route>

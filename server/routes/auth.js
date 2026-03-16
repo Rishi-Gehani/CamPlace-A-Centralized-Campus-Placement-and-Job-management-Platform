@@ -178,4 +178,52 @@ router.put('/profile', async (req, res) => {
   }
 });
 
+// Change Password
+router.put('/change-password', async (req, res) => {
+  try {
+    const token = req.header('x-auth-token');
+    if (!token) return res.status(401).json({ message: 'No token, authorization denied' });
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userId = decoded.id;
+
+    const { currentPassword, newPassword } = req.body;
+
+    if (currentPassword === newPassword) {
+      return res.status(400).json({ message: 'New password cannot be the same as current password' });
+    }
+
+    // Password complexity validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,12}$/;
+    if (!passwordRegex.test(newPassword)) {
+      return res.status(400).json({ message: 'Password must be 8-12 characters long, include at least one uppercase letter, one lowercase letter, one number, and one special character' });
+    }
+
+    // Fetch user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Compare current password
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Current password is incorrect' });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update password
+    user.password = hashedPassword;
+    await user.save();
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
 export default router;
