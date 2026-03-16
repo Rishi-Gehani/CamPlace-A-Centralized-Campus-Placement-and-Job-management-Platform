@@ -4,6 +4,7 @@ const router = express.Router();
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import { sendRegistrationEmail } from '../utils/mailer.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
 
@@ -61,6 +62,9 @@ router.post('/register', async (req, res) => {
     });
 
     await user.save();
+
+    // Send registration email
+    sendRegistrationEmail(user);
 
     // Create token
     const token = jwt.sign(

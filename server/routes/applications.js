@@ -5,6 +5,7 @@ import Job from '../models/Job.js';
 import User from '../models/User.js';
 import { auth } from '../middleware/auth.js';
 import { adminAuth } from '../middleware/adminAuth.js';
+import { sendShortlistedEmail, sendSelectedEmail, sendRejectedEmail } from '../utils/mailer.js';
 
 // @route   POST api/applications/apply/:jobId
 // @desc    Apply for a job
@@ -111,6 +112,19 @@ router.put('/:id/status', adminAuth, async (req, res) => {
 
     application.currentStage = status;
     await application.save();
+
+    // Fetch student and job details for email
+    const student = await User.findById(application.studentId);
+    const job = await Job.findById(application.jobId);
+
+    // Send emails based on status
+    if (status === 'SHORTLISTED') {
+      sendShortlistedEmail(student, job);
+    } else if (status === 'SELECTED') {
+      sendSelectedEmail(student, job);
+    } else if (status === 'REJECTED') {
+      sendRejectedEmail(student, job);
+    }
 
     // Finalization Logic (Rule 8)
     if (status === 'SELECTED') {
