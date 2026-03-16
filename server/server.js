@@ -12,6 +12,7 @@ import authRoutes from './routes/auth.js';
 import adminRoutes from './routes/admin.js';
 import jobRoutes from './routes/jobs.js';
 import applicationRoutes from './routes/applications.js';
+import queryRoutes from './routes/queries.js';
 import User from './models/User.js';
 
 dotenv.config();
@@ -89,6 +90,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/applications', applicationRoutes);
+app.use('/api/queries', queryRoutes);
 
 // Vite middleware for development
 if (process.env.NODE_ENV !== "production") {

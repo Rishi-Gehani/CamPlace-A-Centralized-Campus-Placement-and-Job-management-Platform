@@ -17,6 +17,7 @@ import JobManagement from "./pages/admin/JobManagement.jsx";
 import ApplicationManagement from "./pages/admin/ApplicationManagement.jsx";
 import PlacementRecords from "./pages/admin/PlacementRecords.jsx";
 import ReportsAnalytics from "./pages/admin/ReportsAnalytics.jsx";
+import QueryResolution from "./pages/admin/QueryResolution.jsx";
 import AdminProfile from "./pages/admin/AdminProfile.jsx";
 
 import { AuthProvider } from "./context/AuthContext.jsx";
@@ -54,6 +55,7 @@ export default function App() {
             <Route path="applications" element={<ApplicationManagement />} />
             <Route path="records" element={<PlacementRecords />} />
             <Route path="reports" element={<ReportsAnalytics />} />
+            <Route path="queries" element={<QueryResolution />} />
             <Route path="profile" element={<AdminProfile />} />
           </Route>
         </Routes>
