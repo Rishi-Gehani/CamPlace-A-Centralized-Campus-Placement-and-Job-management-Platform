@@ -10,7 +10,7 @@ export default function ProfileSidebar({ isOpen, onClose }) {
     { icon: User, label: 'Manage Profile', path: '/profile' },
     { icon: History, label: 'Application Tracking', path: '/applications' },
     { icon: HelpCircle, label: 'Help Manual', path: '/help' },
-    { icon: Lock, label: 'Change Password', path: '/security' },
+    { icon: Lock, label: 'Change Password', path: '/change-password' },
   ];
 
   if (!user) return null;
