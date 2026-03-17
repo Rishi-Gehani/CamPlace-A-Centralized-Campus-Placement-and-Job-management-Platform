@@ -2,6 +2,7 @@ import express from 'express';
 const router = express.Router();
 import Job from '../models/Job.js';
 import Application from '../models/Application.js';
+import Notification from '../models/Notification.js';
 import { adminAuth } from '../middleware/adminAuth.js';
 
 // @route   GET api/jobs
@@ -37,10 +38,20 @@ router.post('/', adminAuth, async (req, res) => {
     const newJob = new Job(req.body);
     const job = await newJob.save();
     
+    // Create notification for all students
+    const notification = new Notification({
+      message: `New job posted: ${job.title}`,
+      type: 'job',
+      relatedId: job._id,
+      recipient: null // Broadcast
+    });
+    await notification.save();
+
     // Emit real-time update via Socket.io
     const io = req.app.get('io');
     io.emit('newJob', job);
     io.emit('analyticsUpdated');
+    io.emit('new_notification', notification);
     
     res.json(job);
   } catch (err) {

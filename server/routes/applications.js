@@ -3,6 +3,7 @@ const router = express.Router();
 import Application from '../models/Application.js';
 import Job from '../models/Job.js';
 import User from '../models/User.js';
+import Notification from '../models/Notification.js';
 import { auth } from '../middleware/auth.js';
 import { adminAuth } from '../middleware/adminAuth.js';
 import { sendShortlistedEmail, sendSelectedEmail, sendRejectedEmail } from '../utils/mailer.js';
@@ -49,6 +50,13 @@ router.post('/apply/:jobId', auth, async (req, res) => {
     });
 
     await newApplication.save();
+
+    // Emit real-time update via Socket.io
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('analyticsUpdated');
+    }
+
     res.json(newApplication);
   } catch (err) {
     console.error(err.message);
@@ -126,6 +134,15 @@ router.put('/:id/status', adminAuth, async (req, res) => {
       sendRejectedEmail(student, job);
     }
 
+    // Create notification for the student
+    const notification = new Notification({
+      message: `Your application status for ${job.title} changed to ${status}`,
+      type: 'application',
+      relatedId: application._id,
+      recipient: application.studentId
+    });
+    await notification.save();
+
     // Finalization Logic (Rule 8)
     if (status === 'SELECTED') {
       await User.findByIdAndUpdate(application.studentId, { placementStatus: 'PLACED' });
@@ -133,11 +150,15 @@ router.put('/:id/status', adminAuth, async (req, res) => {
 
     // Emit real-time update via Socket.io
     const io = req.app.get('io');
-    io.to(application.studentId.toString()).emit('applicationUpdate', { 
-      applicationId: application._id, 
-      status,
-      rejectedAtStage: application.rejectedAtStage
-    });
+    if (io) {
+      io.to(application.studentId.toString()).emit('applicationUpdate', { 
+        applicationId: application._id, 
+        status,
+        rejectedAtStage: application.rejectedAtStage
+      });
+      io.emit('analyticsUpdated');
+      io.to(application.studentId.toString()).emit('new_notification', notification);
+    }
 
     res.json(application);
   } catch (err) {

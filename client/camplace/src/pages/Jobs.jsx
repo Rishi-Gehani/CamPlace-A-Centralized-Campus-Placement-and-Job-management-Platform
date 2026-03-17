@@ -3,10 +3,11 @@ import { motion, AnimatePresence } from "motion/react";
 import { Search, Filter, Clock, XCircle, X, Info, ListChecks, Tags, AlertCircle, CheckCircle2, Building2, MapPin, Calendar } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { Navigate, Link } from "react-router-dom";
-import { io } from 'socket.io-client';
+import { useSocket } from "../hooks/useSocket";
 
 export default function Jobs() {
   const { user, loading: authLoading } = useAuth();
+  const socket = useSocket();
   const [jobs, setJobs] = useState([]);
   const [myApplications, setMyApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,41 +22,6 @@ export default function Jobs() {
   
   // Modal
   const [selectedJob, setSelectedJob] = useState(null);
-
-  useEffect(() => {
-    if (user && (user.role === 'admin' || user.profileStatus === 'VERIFIED')) {
-      fetchData();
-
-      const socket = io();
-      socket.emit('join', user.id);
-
-      socket.on('applicationUpdate', (data) => {
-        setMyApplications(prev => prev.map(app => 
-          app._id === data.applicationId ? { ...app, currentStage: data.status } : app
-        ));
-        if (data.status === 'SELECTED') {
-          window.location.reload();
-        }
-      });
-
-      socket.on('newJob', (job) => {
-        setJobs(prev => [job, ...prev]);
-      });
-
-      socket.on('jobUpdated', (updatedJob) => {
-        setJobs(prev => prev.map(job => job._id === updatedJob._id ? updatedJob : job));
-      });
-
-      socket.on('jobDeleted', (jobId) => {
-        setJobs(prev => prev.filter(job => job._id !== jobId));
-        setSelectedJob(prev => prev?._id === jobId ? null : prev);
-      });
-
-      return () => {
-        socket.disconnect();
-      };
-    }
-  }, [user]);
 
   const fetchData = async () => {
     try {
@@ -82,6 +48,45 @@ export default function Jobs() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (user && (user.role === 'admin' || user.profileStatus === 'VERIFIED')) {
+      fetchData();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (socket && user) {
+      socket.on('applicationUpdate', (data) => {
+        setMyApplications(prev => prev.map(app => 
+          app._id === data.applicationId ? { ...app, currentStage: data.status } : app
+        ));
+        if (data.status === 'SELECTED') {
+          fetchData(); // Refresh everything to reflect placement status
+        }
+      });
+
+      socket.on('newJob', () => {
+        fetchData(); // Full refresh on new job
+      });
+
+      socket.on('jobUpdated', () => {
+        fetchData(); // Full refresh on update
+      });
+
+      socket.on('jobDeleted', (jobId) => {
+        fetchData(); // Full refresh on delete
+        setSelectedJob(prev => prev?._id === jobId ? null : prev);
+      });
+
+      return () => {
+        socket.off('applicationUpdate');
+        socket.off('newJob');
+        socket.off('jobUpdated');
+        socket.off('jobDeleted');
+      };
+    }
+  }, [socket, user]);
 
   const handleApply = async (jobId) => {
     try {

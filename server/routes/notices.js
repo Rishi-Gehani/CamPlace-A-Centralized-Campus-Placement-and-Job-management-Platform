@@ -1,6 +1,7 @@
 import express from 'express';
 import validator from 'validator';
 import Notice from '../models/Notice.js';
+import Notification from '../models/Notification.js';
 import { adminAuth } from '../middleware/adminAuth.js';
 
 const router = express.Router();
@@ -74,9 +75,21 @@ router.post('/', adminAuth, async (req, res) => {
 
     await notice.save();
 
+    // Create notification for all students
+    const notification = new Notification({
+      message: `New notice: ${notice.title}`,
+      type: 'notice',
+      relatedId: notice._id,
+      recipient: null // Broadcast
+    });
+    await notification.save();
+
     // Emit real-time update
     const io = req.app.get('io');
-    if (io) io.emit('noticeUpdated');
+    if (io) {
+      io.emit('noticeUpdated');
+      io.emit('new_notification', notification);
+    }
 
     res.json(notice);
   } catch (err) {
