@@ -15,6 +15,7 @@ import applicationRoutes from './routes/applications.js';
 import queryRoutes from './routes/queries.js';
 import resourceRoutes from './routes/resources.js';
 import noticeRoutes from './routes/notices.js';
+import notificationRoutes from './routes/notifications.js';
 import User from './models/User.js';
 
 dotenv.config();
@@ -96,6 +97,7 @@ app.use('/api/applications', applicationRoutes);
 app.use('/api/queries', queryRoutes);
 app.use('/api/resources', resourceRoutes);
 app.use('/api/notices', noticeRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Vite middleware for development
 if (process.env.NODE_ENV !== "production") {

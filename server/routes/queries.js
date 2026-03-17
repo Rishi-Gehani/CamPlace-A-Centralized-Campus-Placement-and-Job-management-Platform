@@ -1,12 +1,14 @@
 import express from 'express';
 const router = express.Router();
 import Query from '../models/Query.js';
+import Notification from '../models/Notification.js';
 import { adminAuth } from '../middleware/adminAuth.js';
+import { auth } from '../middleware/auth.js';
 import { sendQueryConfirmationEmail, sendQueryReplyEmail } from '../utils/mailer.js';
 
 // @route   POST api/queries
 // @desc    Submit a contact query
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
   try {
     const { firstName, lastName, email, subject, message } = req.body;
 
@@ -27,8 +29,8 @@ router.post('/', async (req, res) => {
     }
 
     // Message validation
-    if (message.length < 10 || message.length > 5000) {
-      return res.status(400).json({ message: 'Message should be between 10 and 5000 characters.' });
+    if (message.length < 10 || message.length > 1000) {
+      return res.status(400).json({ message: 'Message should be between 10 and 1000 characters.' });
     }
 
     const newQuery = new Query({
@@ -36,7 +38,8 @@ router.post('/', async (req, res) => {
       lastName,
       email,
       subject,
-      message
+      message,
+      userId: req.user.id
     });
 
     await newQuery.save();
@@ -77,6 +80,23 @@ router.put('/:id/reply', adminAuth, async (req, res) => {
     query.adminReply = reply;
     query.status = 'replied';
     await query.save();
+
+    // Create notification for the user who raised the query
+    if (query.userId) {
+      const notification = new Notification({
+        message: `Your query has been resolved: ${query.subject}`,
+        type: 'query',
+        relatedId: query._id,
+        recipient: query.userId
+      });
+      await notification.save();
+
+      // Emit real-time update
+      const io = req.app.get('io');
+      if (io) {
+        io.to(query.userId.toString()).emit('new_notification', notification);
+      }
+    }
 
     // Send reply email
     sendQueryReplyEmail(query, reply);

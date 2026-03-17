@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import AuthModal from "./AuthModal";
 import ProfileSidebar from "./ProfileSidebar";
+import NotificationBell from "./NotificationBell";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -73,6 +74,7 @@ export default function Navbar() {
                   >
                     <User size={20} />
                   </button>
+                  <NotificationBell />
                 </div>
               ) : (
                 <button 
@@ -86,9 +88,12 @@ export default function Navbar() {
             </div>
 
           {/* Mobile Menu Toggle */}
-          <button className="md:hidden p-2" onClick={() => setIsOpen(!isOpen)}>
-            {isOpen ? <X /> : <Menu />}
-          </button>
+          <div className="flex items-center gap-2 md:hidden">
+            <button className="p-2" onClick={() => setIsOpen(!isOpen)}>
+              {isOpen ? <X /> : <Menu />}
+            </button>
+            <NotificationBell />
+          </div>
         </div>
       </div>
 

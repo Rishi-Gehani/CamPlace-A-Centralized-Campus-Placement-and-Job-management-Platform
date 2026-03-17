@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { AuthContext } from './AuthContext';
-import { io } from 'socket.io-client';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -18,25 +17,6 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   }, []);
-
-  useEffect(() => {
-    if (user) {
-      const socket = io();
-      const userId = user.id || user._id;
-      socket.emit('join', userId);
-
-      socket.on('statusUpdate', (data) => {
-        setUser(prev => {
-          if (!prev) return prev;
-          return { ...prev, ...data };
-        });
-      });
-
-      return () => {
-        socket.disconnect();
-      };
-    }
-  }, [user, user?.id, user?._id]);
 
   const fetchUser = async (token) => {
     try {
@@ -139,3 +119,4 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
