@@ -25,12 +25,14 @@ import AdminProfile from "./pages/admin/AdminProfile.jsx";
 import NoticesManagement from "./pages/admin/NoticesManagement.jsx";
 
 import { AuthProvider } from "./context/AuthContext.jsx";
+import { ToastProvider } from "./context/ToastContext.jsx";
 
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
+      <ToastProvider>
+        <BrowserRouter>
+          <Routes>
           {/* Public & Student Routes */}
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
@@ -75,6 +77,7 @@ export default function App() {
           </Route>
         </Routes>
       </BrowserRouter>
-    </AuthProvider>
-  );
+    </ToastProvider>
+  </AuthProvider>
+);
 }

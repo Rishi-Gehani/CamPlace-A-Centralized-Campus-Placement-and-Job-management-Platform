@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Search, Plus, X, Trash2, Edit2, Star, Check, AlertCircle, Loader2, ExternalLink, Megaphone, Calendar } from "lucide-react";
-import { io } from "socket.io-client";
+import { useSocket } from "../../hooks/useSocket";
+import { useToast } from "../../context/ToastContext";
+import RefreshButton from "../../components/RefreshButton";
 
 const CATEGORIES = ['General', 'Event', 'Placement', 'Academic', 'Others'];
 
@@ -16,6 +18,8 @@ const CATEGORY_COLORS = {
 export default function NoticesManagement() {
   const [notices, setNotices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
+  const socket = useSocket();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,7 +28,6 @@ export default function NoticesManagement() {
   const [editingNotice, setEditingNotice] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -54,29 +57,22 @@ export default function NoticesManagement() {
 
   useEffect(() => {
     fetchNotices();
-
-    const socket = io(window.location.origin, {
-      transports: ['websocket', 'polling'],
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000
-    });
-
-    socket.on("connect", () => {
-      console.log("Admin connected to real-time notices server");
-    });
-
-    socket.on("noticeUpdated", () => {
-      console.log("Admin real-time notice update received");
-      fetchNotices();
-    });
-
-    socket.on("connect_error", (err) => {
-      console.error("Admin socket connection error:", err);
-    });
-
-    return () => socket.disconnect();
   }, [fetchNotices]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNoticeUpdate = () => {
+      fetchNotices();
+      showToast("Notice board updated", "info");
+    };
+
+    socket.on("noticeUpdated", handleNoticeUpdate);
+
+    return () => {
+      socket.off("noticeUpdated", handleNoticeUpdate);
+    };
+  }, [socket, fetchNotices, showToast]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -95,7 +91,7 @@ export default function NoticesManagement() {
     setIsSubmitting(true);
     
     try {
-      const url = editingNotice ? `http://localhost:3000/api/notices/${editingNotice._id}` : "http://localhost:3000/api/notices";
+      const url = editingNotice ? `http://localhost:3000/api/notices/${editingNotice._id}` : "/api/notices";
       const method = editingNotice ? "PUT" : "POST";
       
       const res = await fetch(url, {
@@ -108,8 +104,7 @@ export default function NoticesManagement() {
       });
 
       if (res.ok) {
-        setSuccessMessage(editingNotice ? "Notice updated successfully!" : "Notice created successfully!");
-        setTimeout(() => setSuccessMessage(null), 4000);
+        showToast(editingNotice ? "Notice updated successfully!" : "Notice created successfully!", "success");
         setIsModalOpen(false);
         resetForm();
         fetchNotices();
@@ -164,12 +159,14 @@ export default function NoticesManagement() {
         }
       });
       if (res.ok) {
-        setSuccessMessage("Notice deleted successfully!");
-        setTimeout(() => setSuccessMessage(null), 4000);
+        showToast("Notice deleted successfully!", "success");
         fetchNotices();
+      } else {
+        showToast("Failed to delete notice", "error");
       }
     } catch (err) {
       console.error("Delete failed", err);
+      showToast("Server error", "error");
     } finally {
       setIsDeleteModalOpen(false);
       setNoticeToDelete(null);
@@ -198,31 +195,20 @@ export default function NoticesManagement() {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-8"
     >
-      <AnimatePresence>
-        {successMessage && (
-          <motion.div 
-            initial={{ opacity: 0, y: -20, x: '-50%' }}
-            animate={{ opacity: 1, y: 0, x: '-50%' }}
-            exit={{ opacity: 0, y: -20, x: '-50%' }}
-            className="fixed top-24 left-1/2 z-50 bg-emerald-500 text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 font-bold"
-          >
-            <Check size={20} />
-            {successMessage}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-display font-bold text-secondary">Notice Management</h1>
           <p className="text-secondary/40 font-medium">Create and manage announcements for the notice board.</p>
         </div>
-        <button 
-          onClick={() => { resetForm(); setIsModalOpen(true); }}
-          className="btn-primary flex items-center gap-2 shadow-lg shadow-primary/20"
-        >
-          <Plus size={20} /> Create New Notice
-        </button>
+        <div className="flex items-center gap-3">
+          <RefreshButton onRefresh={fetchNotices} />
+          <button 
+            onClick={() => { resetForm(); setIsModalOpen(true); }}
+            className="btn-primary flex items-center gap-2 shadow-lg shadow-primary/20"
+          >
+            <Plus size={20} /> Create New Notice
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">

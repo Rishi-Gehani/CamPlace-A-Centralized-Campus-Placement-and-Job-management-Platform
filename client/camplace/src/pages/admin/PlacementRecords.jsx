@@ -1,21 +1,21 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "motion/react";
 import { Search, CheckCircle2, XCircle, AlertCircle, Download, Filter, Building2, User } from "lucide-react";
 import * as XLSX from 'xlsx';
+import { useSocket } from "../../hooks/useSocket";
+import { useToast } from "../../context/ToastContext";
+import RefreshButton from "../../components/RefreshButton";
 
 export default function PlacementRecords() {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const { showToast } = useToast();
+  const socket = useSocket();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [companyFilter, setCompanyFilter] = useState("ALL");
 
-  useEffect(() => {
-    fetchRecords();
-  }, []);
-
-  const fetchRecords = async () => {
+  const fetchRecords = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch('http://localhost:3000/api/applications/admin', {
@@ -27,15 +27,34 @@ export default function PlacementRecords() {
         const finalRecords = data.filter(app => ['SELECTED', 'REJECTED'].includes(app.currentStage));
         setRecords(finalRecords);
       } else {
-        setError("Failed to fetch placement records");
+        showToast("Failed to fetch placement records", "error");
       }
     } catch (err) {
       console.error(err);
-      setError("Server error");
+      showToast("Server error while fetching records", "error");
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast]);
+
+  useEffect(() => {
+    fetchRecords();
+  }, [fetchRecords]);
+
+  // Socket listeners for real-time updates
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleUpdate = () => {
+      fetchRecords();
+    };
+
+    socket.on('applicationUpdate', handleUpdate);
+
+    return () => {
+      socket.off('applicationUpdate', handleUpdate);
+    };
+  }, [socket, fetchRecords]);
 
   const filteredRecords = records.filter(record => {
     const studentName = `${record.studentId?.firstName || ''} ${record.studentId?.lastName || ''}`.toLowerCase();
@@ -92,6 +111,7 @@ export default function PlacementRecords() {
           <p className="text-secondary/40 font-medium">History and archive of final placement outcomes.</p>
         </div>
         <div className="flex items-center gap-3">
+          <RefreshButton onRefresh={fetchRecords} />
           <button 
             onClick={exportToExcel}
             className="btn-secondary !py-2.5 !px-5 flex items-center gap-2 text-sm shadow-sm"
@@ -144,12 +164,6 @@ export default function PlacementRecords() {
           </div>
         </div>
       </div>
-
-      {error && (
-        <div className="p-4 bg-red-50 text-red-600 rounded-2xl flex items-center gap-3">
-          <AlertCircle size={20} /> {error}
-        </div>
-      )}
 
       {/* Table */}
       <div className="bg-white rounded-[2.5rem] border border-black/5 shadow-sm overflow-hidden">
