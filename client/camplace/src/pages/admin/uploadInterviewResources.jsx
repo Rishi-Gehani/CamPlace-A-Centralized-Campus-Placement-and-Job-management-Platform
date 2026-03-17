@@ -1,99 +1,566 @@
-import { motion } from "motion/react";
-import { Upload, FileText, Eye, Search, Filter, Plus } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Search, Plus, X, Trash2, Edit2, Star, Check, AlertCircle, Loader2, ExternalLink } from "lucide-react";
+import { io } from "socket.io-client";
+
+const CATEGORIES = [
+  'Technical Guides',
+  'Aptitude Tests',
+  'HR Preparation',
+  'Video Tutorials',
+  'Resume Templates',
+  'Question Banks'
+];
 
 export default function InterviewResources() {
+  const [resources, setResources] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("All");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [resourceToDelete, setResourceToDelete] = useState(null);
+  const [editingResource, setEditingResource] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+
+  // Form State
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    category: CATEGORIES[0],
+    tags: "",
+    externalLink: "",
+    isFeatured: false
+  });
+
+  const fetchResources = useCallback(async () => {
+    try {
+      const query = new URLSearchParams();
+      if (search) query.append("search", search);
+      if (filter !== "All") query.append("category", filter);
+      
+      const res = await fetch(`http://localhost:3000/api/resources?${query.toString()}`);
+      const data = await res.json();
+      setResources(data);
+    } catch (err) {
+      console.error("Failed to fetch resources", err);
+    }
+  }, [search, filter]);
+
+  const fetchCategories = useCallback(async () => {
+    try {
+      const res = await fetch("http://localhost:3000/api/resources/categories");
+      const data = await res.json();
+      setCategories(data);
+    } catch (err) {
+      console.error("Failed to fetch categories", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      await Promise.all([fetchResources(), fetchCategories()]);
+      setLoading(false);
+    };
+    loadData();
+
+    const socket = io(window.location.origin, {
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000
+    });
+
+    socket.on("connect", () => {
+      console.log("Admin connected to real-time updates server");
+    });
+
+    socket.on("resourceUpdated", () => {
+      console.log("Admin real-time update received");
+      fetchResources();
+      fetchCategories();
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("Admin socket connection error:", err);
+    });
+
+    return () => socket.disconnect();
+  }, [fetchResources, fetchCategories]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+
+    // Validations
+    if (formData.title.trim().length < 5) {
+      setError("Title must be at least 5 characters long");
+      return;
+    }
+
+    if (!formData.externalLink) {
+      setError("An external link is required");
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    const tagsArray = formData.tags.split(",").map(t => t.trim()).filter(t => t !== "");
+    
+    const payload = {
+      title: formData.title,
+      description: formData.description,
+      category: formData.category,
+      isFeatured: formData.isFeatured,
+      tags: JSON.stringify(tagsArray),
+      externalLink: formData.externalLink
+    };
+
+    try {
+      const url = editingResource ? `http://localhost:3000/api/resources/${editingResource._id}` : "http://localhost:3000/api/resources";
+      const method = editingResource ? "PUT" : "POST";
+      
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          "x-auth-token": localStorage.getItem("token")
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        setSuccessMessage(editingResource ? "Resource updated successfully!" : "Resource uploaded successfully!");
+        setTimeout(() => setSuccessMessage(null), 4000);
+        setIsModalOpen(false);
+        resetForm();
+        fetchResources();
+        fetchCategories();
+      } else {
+        const errData = await res.json();
+        setError(errData.message || "Failed to save resource");
+      }
+    } catch {
+      setError("An error occurred while saving");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      description: "",
+      category: CATEGORIES[0],
+      tags: "",
+      externalLink: "",
+      isFeatured: false
+    });
+    setEditingResource(null);
+    setError(null);
+  };
+
+  const handleEdit = (resource) => {
+    setEditingResource(resource);
+    setFormData({
+      title: resource.title,
+      description: resource.description || "",
+      category: resource.category,
+      tags: resource.tags.join(", "),
+      externalLink: resource.externalLink || "",
+      isFeatured: resource.isFeatured
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (id) => {
+    setResourceToDelete(id);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!resourceToDelete) return;
+
+    try {
+      const res = await fetch(`http://localhost:3000/api/resources/${resourceToDelete}`, {
+        method: "DELETE",
+        headers: {
+          "x-auth-token": localStorage.getItem("token")
+        }
+      });
+      if (res.ok) {
+        setSuccessMessage("Resource deleted successfully!");
+        setTimeout(() => setSuccessMessage(null), 4000);
+        fetchResources();
+        fetchCategories();
+      }
+    } catch (err) {
+      console.error("Delete failed", err);
+    } finally {
+      setIsDeleteModalOpen(false);
+      setResourceToDelete(null);
+    }
+  };
+
+  const toggleFeatured = async (resource) => {
+    try {
+      const res = await fetch(`http://localhost:3000/api/resources/${resource._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "x-auth-token": localStorage.getItem("token")
+        },
+        body: JSON.stringify({ isFeatured: !resource.isFeatured })
+      });
+      if (res.ok) fetchResources();
+    } catch (err) {
+      console.error("Toggle featured failed", err);
+    }
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="space-y-8"
     >
+      <AnimatePresence>
+        {successMessage && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20, x: '-50%' }}
+            animate={{ opacity: 1, y: 0, x: '-50%' }}
+            exit={{ opacity: 0, y: -20, x: '-50%' }}
+            className="fixed top-24 left-1/2 z-50 bg-emerald-500 text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 font-bold"
+          >
+            <Check size={20} />
+            {successMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-display font-bold text-secondary">Interview Resources</h1>
           <p className="text-secondary/40 font-medium">Upload and manage preparation materials for students.</p>
         </div>
-        <button className="btn-primary flex items-center gap-2 shadow-lg shadow-primary/20">
+        <button 
+          onClick={() => { resetForm(); setIsModalOpen(true); }}
+          className="btn-primary flex items-center gap-2 shadow-lg shadow-primary/20"
+        >
           <Plus size={20} /> Add New Resource
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Upload Area Placeholder */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        {/* Sidebar Stats */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white p-8 rounded-[2.5rem] border-2 border-dashed border-black/10 flex flex-col items-center justify-center text-center space-y-4 min-h-[300px]">
-            <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center">
-              <Upload size={32} />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-secondary">Upload Area</h3>
-              <p className="text-sm text-secondary/40">Drag and drop files here or click to browse</p>
-            </div>
-            <button className="px-6 py-2 bg-secondary text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-secondary/90 transition-all">
-              Select Files
-            </button>
-          </div>
-
-          <div className="bg-white p-8 rounded-[2.5rem] border border-black/5 shadow-sm space-y-4">
+          <div className="bg-white p-8 rounded-[2.5rem] border border-black/5 shadow-sm space-y-6">
             <h3 className="text-sm font-bold uppercase tracking-widest text-secondary/40">Resource Categories</h3>
             <div className="space-y-2">
-              {['Interview PDFs', 'Preparation Guides', 'Question Banks', 'Resume Templates'].map(cat => (
-                <div key={cat} className="flex items-center justify-between p-3 rounded-xl bg-black/[0.02] border border-black/5">
-                  <span className="text-sm font-medium text-secondary/70">{cat}</span>
-                  <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">0</span>
-                </div>
+              <button 
+                onClick={() => setFilter("All")}
+                className={`w-full flex items-center justify-between p-3 rounded-xl transition-all ${filter === "All" ? "bg-primary text-secondary" : "bg-black/[0.02] border border-black/5 text-secondary/70 hover:bg-black/[0.05]"}`}
+              >
+                <span className="text-sm font-bold">All Resources</span>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${filter === "All" ? "bg-white/20" : "bg-primary/10 text-primary"}`}>
+                  {resources.length}
+                </span>
+              </button>
+              {categories.map(cat => (
+                <button 
+                  key={cat.name}
+                  onClick={() => setFilter(cat.name)}
+                  className={`w-full flex items-center justify-between p-3 rounded-xl transition-all ${filter === cat.name ? "bg-primary text-secondary" : "bg-black/[0.02] border border-black/5 text-secondary/70 hover:bg-black/[0.05]"}`}
+                >
+                  <span className="text-sm font-medium">{cat.name}</span>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${filter === cat.name ? "bg-white/20" : "bg-primary/10 text-primary"}`}>
+                    {cat.count}
+                  </span>
+                </button>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Resource List Placeholder */}
-        <div className="lg:col-span-2 space-y-6">
+        {/* Resource List */}
+        <div className="lg:col-span-3 space-y-6">
           <div className="bg-white p-6 rounded-[2.5rem] border border-black/5 shadow-sm flex flex-col md:flex-row gap-4">
             <div className="relative flex-grow">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/40" size={18} />
               <input 
                 type="text" 
-                placeholder="Search resources..." 
+                placeholder="Search by title or tags..." 
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
                 className="w-full pl-12 pr-4 py-3 rounded-xl border border-black/5 bg-[#F8F9FA] focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm"
               />
             </div>
-            <div className="flex gap-2">
-              <button className="p-3 bg-[#F8F9FA] border border-black/5 rounded-xl text-secondary/40 hover:text-primary transition-all">
-                <Filter size={18} />
-              </button>
-            </div>
           </div>
 
-          <div className="bg-white rounded-[2.5rem] border border-black/5 shadow-sm overflow-hidden min-h-[400px] flex flex-col">
+          <div className="bg-white rounded-[2.5rem] border border-black/5 shadow-sm overflow-hidden min-h-[400px]">
             <div className="p-6 border-b border-black/5 bg-black/[0.01]">
-              <h3 className="text-sm font-bold uppercase tracking-widest text-secondary/40">Recent Uploads</h3>
+              <h3 className="text-sm font-bold uppercase tracking-widest text-secondary/40">Manage Resources</h3>
             </div>
-            <div className="flex-grow flex flex-col items-center justify-center p-12 text-center space-y-4">
-              <div className="w-20 h-20 bg-black/5 rounded-3xl flex items-center justify-center text-secondary/20">
-                <FileText size={40} />
+            
+            {loading ? (
+              <div className="flex flex-col items-center justify-center p-20">
+                <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
+                <p className="text-secondary/40 font-medium">Loading resources...</p>
+              </div>
+            ) : resources.length === 0 ? (
+              <div className="flex flex-col items-center justify-center p-20 text-center space-y-4">
+                <div className="w-20 h-20 bg-black/5 rounded-3xl flex items-center justify-center text-secondary/20">
+                  <ExternalLink size={40} />
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-secondary">No resources found</h4>
+                  <p className="text-secondary/40 max-w-xs mx-auto mt-2">Try adjusting your search or filters, or upload a new resource.</p>
+                </div>
+              </div>
+            ) : (
+              <div className="divide-y divide-black/5">
+                {resources.map(resource => (
+                  <div key={resource._id} className="p-6 hover:bg-black/[0.01] transition-all group">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex gap-4">
+                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-amber-50 text-amber-500">
+                          <ExternalLink size={24} />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-lg font-bold text-secondary">{resource.title}</h4>
+                            {resource.isFeatured && (
+                              <span className="bg-amber-100 text-amber-600 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+                                <Star size={10} fill="currentColor" /> Featured
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-secondary/40 line-clamp-1 mb-2">{resource.description || "No description provided."}</p>
+                          <div className="flex flex-wrap gap-2">
+                            <span className="text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-md uppercase tracking-wider">
+                              {resource.category}
+                            </span>
+                            <span className="text-[10px] font-bold bg-black/5 text-secondary/40 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                              LINK
+                            </span>
+                            {resource.tags.map(tag => (
+                              <span key={tag} className="text-[10px] font-bold bg-black/5 text-secondary/40 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                                #{tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                        <button 
+                          onClick={() => toggleFeatured(resource)}
+                          className={`p-2 rounded-xl transition-all ${resource.isFeatured ? 'bg-amber-50 text-amber-500' : 'bg-black/5 text-secondary/40 hover:text-amber-500'}`}
+                          title={resource.isFeatured ? "Remove from Featured" : "Mark as Featured"}
+                        >
+                          <Star size={18} fill={resource.isFeatured ? "currentColor" : "none"} />
+                        </button>
+                        <button 
+                          onClick={() => handleEdit(resource)}
+                          className="p-2 bg-black/5 text-secondary/40 hover:text-primary hover:bg-primary/10 rounded-xl transition-all"
+                          title="Edit Resource"
+                        >
+                          <Edit2 size={18} />
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(resource._id)}
+                          className="p-2 bg-black/5 text-secondary/40 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                          title="Delete Resource"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Upload/Edit Modal */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden"
+            >
+              <div className="p-8 border-b border-black/5 flex items-center justify-between bg-black/[0.01]">
+                <div>
+                  <h2 className="text-2xl font-display font-bold text-secondary">
+                    {editingResource ? "Edit Resource" : "Add New Resource"}
+                  </h2>
+                  <p className="text-secondary/40 text-sm font-medium">Fill in the details for the interview resource.</p>
+                </div>
+                <button 
+                  onClick={() => setIsModalOpen(false)}
+                  className="p-2 hover:bg-black/5 rounded-xl transition-all text-secondary/40"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit} className="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
+                {error && (
+                  <div className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 text-sm font-medium">
+                    <AlertCircle size={18} />
+                    {error}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-secondary/40 ml-1">Resource Title *</label>
+                    <input 
+                      type="text"
+                      required
+                      placeholder="e.g., Data Structures Interview Guide"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border border-black/5 bg-[#F8F9FA] focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-secondary/40 ml-1">Category *</label>
+                    <select 
+                      required
+                      value={formData.category}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border border-black/5 bg-[#F8F9FA] focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+                    >
+                      {CATEGORIES.map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-widest text-secondary/40 ml-1">Description</label>
+                  <textarea 
+                    placeholder="Briefly describe what this resource covers..."
+                    rows={3}
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl border border-black/5 bg-[#F8F9FA] focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm resize-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-widest text-secondary/40 ml-1">Tags (Comma separated)</label>
+                  <input 
+                    type="text"
+                    placeholder="e.g., DSA, Java, Technical, TCS"
+                    value={formData.tags}
+                    onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl border border-black/5 bg-[#F8F9FA] focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+                  />
+                </div>
+
+                <div className="space-y-4 pt-2">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-secondary/40 ml-1">External Link *</label>
+                    <div className="relative">
+                      <ExternalLink className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/40" size={18} />
+                      <input 
+                        type="url"
+                        placeholder="https://example.com/resource"
+                        value={formData.externalLink}
+                        onChange={(e) => setFormData({ ...formData, externalLink: e.target.value })}
+                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-black/5 bg-[#F8F9FA] focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+                      />
+                    </div>
+                    <p className="text-[10px] text-secondary/40 ml-1 italic">Provide a link to Google Drive, YouTube, or any external resource.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 pt-2">
+                  <button 
+                    type="button"
+                    onClick={() => setFormData({ ...formData, isFeatured: !formData.isFeatured })}
+                    className={`w-12 h-6 rounded-full transition-all relative ${formData.isFeatured ? 'bg-primary' : 'bg-black/10'}`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.isFeatured ? 'left-7' : 'left-1'}`} />
+                  </button>
+                  <span className="text-sm font-bold text-secondary">Mark as Featured Resource</span>
+                </div>
+              </form>
+
+              <div className="p-8 border-t border-black/5 flex items-center justify-end gap-4 bg-black/[0.01]">
+                <button 
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-6 py-3 text-sm font-bold text-secondary/40 hover:text-secondary transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className="btn-primary !px-10 flex items-center gap-2 min-w-[140px] justify-center"
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      {editingResource ? <Check size={18} /> : <Plus size={18} />}
+                      {editingResource ? "Update Resource" : "Create Resource"}
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {isDeleteModalOpen && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden p-8 text-center space-y-6"
+            >
+              <div className="w-20 h-20 bg-red-50 text-red-500 rounded-3xl flex items-center justify-center mx-auto">
+                <Trash2 size={40} />
               </div>
               <div>
-                <h4 className="text-xl font-bold text-secondary">No resources uploaded yet</h4>
-                <p className="text-secondary/40 max-w-xs mx-auto mt-2">Start by uploading interview guides, PDFs, or question banks for students.</p>
+                <h2 className="text-2xl font-display font-bold text-secondary">Delete Resource?</h2>
+                <p className="text-secondary/40 font-medium mt-2">This action cannot be undone. Are you sure you want to remove this resource?</p>
               </div>
-            </div>
+              <div className="flex items-center gap-4">
+                <button 
+                  onClick={() => setIsDeleteModalOpen(false)}
+                  className="flex-1 px-6 py-4 rounded-2xl bg-black/5 text-secondary font-bold hover:bg-black/10 transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={confirmDelete}
+                  className="flex-1 px-6 py-4 rounded-2xl bg-red-500 text-white font-bold hover:bg-red-600 transition-all shadow-lg shadow-red-500/20"
+                >
+                  Delete
+                </button>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      </div>
-
-      {/* File Preview Section Placeholder */}
-      <div className="bg-white p-8 rounded-[2.5rem] border border-black/5 shadow-sm">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-emerald-50 text-emerald-500 rounded-xl flex items-center justify-center">
-            <Eye size={20} />
-          </div>
-          <h3 className="text-xl font-bold text-secondary">File Preview Section</h3>
-        </div>
-        <div className="aspect-video bg-black/[0.02] border border-black/5 rounded-[2rem] flex items-center justify-center">
-          <p className="text-secondary/30 font-medium italic">Select a file to preview its content here</p>
-        </div>
-      </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

@@ -144,19 +144,6 @@ export default function Partners() {
           ))}
         </div>
       </section>
-
-      {/* CTA */}
-      <section className="py-24 page-container">
-        <div className="bg-primary rounded-[3rem] p-12 lg:p-20 text-center space-y-8">
-          <h2 className="section-title text-secondary">Ready to join these industry leaders?</h2>
-          <p className="text-secondary/70 text-xl max-w-2xl mx-auto">
-            Complete your profile today and get eligible for the upcoming recruitment drives from our partners.
-          </p>
-          <div className="flex justify-center">
-            <button className="btn-secondary !px-12 !py-4">Complete My Profile</button>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

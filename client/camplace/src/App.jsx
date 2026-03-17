@@ -42,7 +42,14 @@ export default function App() {
             <Route path="profile" element={<Profile />} />
             <Route path="change-password" element={<ChangePassword />} />
             <Route path="notices" element={<Notices />} />
-            <Route path="interview-resources" element={<StudentInterviewResources />} />
+            <Route 
+              path="interview-resources" 
+              element={
+                <ProtectedRoute>
+                  <StudentInterviewResources />
+                </ProtectedRoute>
+              } 
+            />
             <Route path="login" element={<Navigate to="/" state={{ openAuth: 'login' }} />} />
             <Route path="register" element={<Navigate to="/" state={{ openAuth: 'register' }} />} />
           </Route>

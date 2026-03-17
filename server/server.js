@@ -13,8 +13,11 @@ import adminRoutes from './routes/admin.js';
 import jobRoutes from './routes/jobs.js';
 import applicationRoutes from './routes/applications.js';
 import queryRoutes from './routes/queries.js';
+import resourceRoutes from './routes/resources.js';
+import noticeRoutes from './routes/notices.js';
 import User from './models/User.js';
 
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,6 +37,7 @@ const PORT = 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Socket.io connection
 io.on('connection', (socket) => {
@@ -90,6 +94,8 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/queries', queryRoutes);
+app.use('/api/resources', resourceRoutes);
+app.use('/api/notices', noticeRoutes);
 
 // Vite middleware for development
 if (process.env.NODE_ENV !== "production") {

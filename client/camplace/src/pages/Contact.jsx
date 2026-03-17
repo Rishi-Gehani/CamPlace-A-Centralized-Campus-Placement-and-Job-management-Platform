@@ -138,8 +138,7 @@ export default function Contact() {
                 </div>
                 <div>
                   <h4 className="text-xl font-bold mb-1">Email Us</h4>
-                  <p className="text-secondary/60">General Inquiries: hello@camplace.edu</p>
-                  <p className="text-secondary/60">Support: support@camplace.edu</p>
+                  <p className="text-secondary/60">Support: rishi.gehani@somaiya.edu</p>
                 </div>
               </div>
 
@@ -160,8 +159,8 @@ export default function Contact() {
                 </div>
                 <div>
                   <h4 className="text-xl font-bold mb-1">Visit Us</h4>
-                  <p className="text-secondary/60">Tech University Campus, Block A</p>
-                  <p className="text-secondary/60">New Delhi, India - 110001</p>
+                  <p className="text-secondary/60">4th floor, Aurobindo Building, Somaiya Vidyavihar University</p>
+                  <p className="text-secondary/60">Vidyavihar (East), India - 400077</p>
                 </div>
               </div>
             </div>
@@ -197,7 +196,7 @@ export default function Contact() {
                       value={formData.firstName}
                       onChange={handleChange}
                       className="input-field" 
-                      placeholder="John" 
+                      placeholder="First Name" 
                       required
                     />
                   </div>
@@ -209,7 +208,7 @@ export default function Contact() {
                       value={formData.lastName}
                       onChange={handleChange}
                       className="input-field" 
-                      placeholder="Doe" 
+                      placeholder="Last Name" 
                       required
                     />
                   </div>
@@ -222,7 +221,7 @@ export default function Contact() {
                     value={formData.email}
                     onChange={handleChange}
                     className="input-field" 
-                    placeholder="john@example.com" 
+                    placeholder="yourname@somaiya.edu" 
                     required
                   />
                 </div>
