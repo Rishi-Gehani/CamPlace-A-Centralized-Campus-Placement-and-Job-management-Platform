@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Search, Plus, X, Trash2, Edit2, Star, Check, AlertCircle, Loader2, ExternalLink } from "lucide-react";
-import { io } from "socket.io-client";
+import { useSocket } from "../../hooks/useSocket";
+import { useToast } from "../../context/ToastContext";
+import RefreshButton from "../../components/RefreshButton";
 
 const CATEGORIES = [
   'Technical Guides',
@@ -16,6 +18,8 @@ export default function InterviewResources() {
   const [resources, setResources] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
+  const socket = useSocket();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,7 +28,6 @@ export default function InterviewResources() {
   const [editingResource, setEditingResource] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -67,30 +70,23 @@ export default function InterviewResources() {
       setLoading(false);
     };
     loadData();
+  }, [fetchResources, fetchCategories]);
 
-    const socket = io(window.location.origin, {
-      transports: ['websocket', 'polling'],
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000
-    });
+  useEffect(() => {
+    if (!socket) return;
 
-    socket.on("connect", () => {
-      console.log("Admin connected to real-time updates server");
-    });
-
-    socket.on("resourceUpdated", () => {
-      console.log("Admin real-time update received");
+    const handleResourceUpdate = () => {
       fetchResources();
       fetchCategories();
-    });
+      showToast("Interview resources updated", "info");
+    };
 
-    socket.on("connect_error", (err) => {
-      console.error("Admin socket connection error:", err);
-    });
+    socket.on("resourceUpdated", handleResourceUpdate);
 
-    return () => socket.disconnect();
-  }, [fetchResources, fetchCategories]);
+    return () => {
+      socket.off("resourceUpdated", handleResourceUpdate);
+    };
+  }, [socket, fetchResources, fetchCategories, showToast]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -134,8 +130,7 @@ export default function InterviewResources() {
       });
 
       if (res.ok) {
-        setSuccessMessage(editingResource ? "Resource updated successfully!" : "Resource uploaded successfully!");
-        setTimeout(() => setSuccessMessage(null), 4000);
+        showToast(editingResource ? "Resource updated successfully!" : "Resource uploaded successfully!", "success");
         setIsModalOpen(false);
         resetForm();
         fetchResources();
@@ -193,13 +188,15 @@ export default function InterviewResources() {
         }
       });
       if (res.ok) {
-        setSuccessMessage("Resource deleted successfully!");
-        setTimeout(() => setSuccessMessage(null), 4000);
+        showToast("Resource deleted successfully!", "success");
         fetchResources();
         fetchCategories();
+      } else {
+        showToast("Failed to delete resource", "error");
       }
     } catch (err) {
       console.error("Delete failed", err);
+      showToast("Server error", "error");
     } finally {
       setIsDeleteModalOpen(false);
       setResourceToDelete(null);
@@ -228,31 +225,20 @@ export default function InterviewResources() {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-8"
     >
-      <AnimatePresence>
-        {successMessage && (
-          <motion.div 
-            initial={{ opacity: 0, y: -20, x: '-50%' }}
-            animate={{ opacity: 1, y: 0, x: '-50%' }}
-            exit={{ opacity: 0, y: -20, x: '-50%' }}
-            className="fixed top-24 left-1/2 z-50 bg-emerald-500 text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 font-bold"
-          >
-            <Check size={20} />
-            {successMessage}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-display font-bold text-secondary">Interview Resources</h1>
           <p className="text-secondary/40 font-medium">Upload and manage preparation materials for students.</p>
         </div>
-        <button 
-          onClick={() => { resetForm(); setIsModalOpen(true); }}
-          className="btn-primary flex items-center gap-2 shadow-lg shadow-primary/20"
-        >
-          <Plus size={20} /> Add New Resource
-        </button>
+        <div className="flex items-center gap-3">
+          <RefreshButton onRefresh={() => Promise.all([fetchResources(), fetchCategories()])} />
+          <button 
+            onClick={() => { resetForm(); setIsModalOpen(true); }}
+            className="btn-primary flex items-center gap-2 shadow-lg shadow-primary/20"
+          >
+            <Plus size={20} /> Add New Resource
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">

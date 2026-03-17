@@ -27,6 +27,9 @@ export default function JobForm({ initialData, onSubmit, onCancel, loading }) {
     interviewDate: '',
     interviewTime: ''
   });
+  const [errors, setErrors] = useState({});
+
+  const todayStr = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
     const initializeForm = () => {
@@ -58,23 +61,28 @@ export default function JobForm({ initialData, onSubmit, onCancel, loading }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setErrors({});
     
     // Date Validations
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const deadlineDate = new Date(formData.deadline);
+    const newErrors = {};
     
-    if (deadlineDate <= today) {
-      alert("Application deadline must be a future date.");
-      return;
+    if (deadlineDate < today) {
+      newErrors.deadline = "Application deadline cannot be in the past.";
     }
 
     if (formData.interviewDate) {
       const interviewDate = new Date(formData.interviewDate);
       if (interviewDate <= deadlineDate) {
-        alert("Interview date must be after the application deadline.");
-        return;
+        newErrors.interviewDate = "Interview date must be after the application deadline.";
       }
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
     }
 
     onSubmit(formData);
@@ -233,16 +241,20 @@ export default function JobForm({ initialData, onSubmit, onCancel, loading }) {
         <div className="space-y-1.5">
           <label className="text-xs font-bold uppercase tracking-widest text-secondary/40 ml-1">Application Deadline</label>
           <div className="relative">
-            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" size={18} />
+            <Calendar className={`absolute left-4 top-1/2 -translate-y-1/2 ${errors.deadline ? 'text-red-400' : 'text-secondary/30'}`} size={18} />
             <input
               required
               type="date"
               name="deadline"
+              min={todayStr}
               value={formData.deadline}
               onChange={handleChange}
-              className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+              className={`w-full pl-12 pr-4 py-3.5 rounded-2xl border bg-white shadow-sm focus:outline-none focus:ring-2 transition-all ${
+                errors.deadline ? 'border-red-200 focus:ring-red-100' : 'border-black/5 focus:ring-primary/20'
+              }`}
             />
           </div>
+          {errors.deadline && <p className="text-[10px] font-bold text-red-500 ml-1">{errors.deadline}</p>}
         </div>
 
         {/* Interview Date & Time */}
@@ -252,10 +264,14 @@ export default function JobForm({ initialData, onSubmit, onCancel, loading }) {
             <input
               type="date"
               name="interviewDate"
+              min={formData.deadline || todayStr}
               value={formData.interviewDate}
               onChange={handleChange}
-              className="w-full px-4 py-3.5 rounded-2xl border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+              className={`w-full px-4 py-3.5 rounded-2xl border bg-white shadow-sm focus:outline-none focus:ring-2 transition-all ${
+                errors.interviewDate ? 'border-red-200 focus:ring-red-100' : 'border-black/5 focus:ring-primary/20'
+              }`}
             />
+            {errors.interviewDate && <p className="text-[10px] font-bold text-red-500 ml-1">{errors.interviewDate}</p>}
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-bold uppercase tracking-widest text-secondary/40 ml-1">Interview Time</label>

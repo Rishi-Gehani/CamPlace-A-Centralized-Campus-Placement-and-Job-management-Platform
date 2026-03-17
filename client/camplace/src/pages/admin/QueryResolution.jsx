@@ -1,15 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "motion/react";
 import { MessageSquare, Send, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { useSocket } from "../../hooks/useSocket";
+import { useToast } from "../../context/ToastContext";
+import RefreshButton from "../../components/RefreshButton";
 
 export default function QueryResolution() {
   const [queries, setQueries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
+  const socket = useSocket();
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyText, setReplyText] = useState("");
   const [submittingReply, setSubmittingReply] = useState(false);
 
-  const fetchQueries = async () => {
+  const fetchQueries = useCallback(async () => {
     try {
       const res = await fetch('http://localhost:3000/api/queries', {
         headers: {
@@ -19,20 +24,36 @@ export default function QueryResolution() {
       if (res.ok) {
         const data = await res.json();
         setQueries(data);
+      } else {
+        showToast("Failed to fetch queries", "error");
       }
     } catch (err) {
       console.error("Error fetching queries:", err);
+      showToast("Server error while fetching queries", "error");
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast]);
 
   useEffect(() => {
     fetchQueries();
-    // Auto-refresh polling every 6 seconds
-    const interval = setInterval(fetchQueries, 6000);
-    return () => clearInterval(interval);
-  }, []);
+  }, [fetchQueries]);
+
+  // Socket listeners for real-time updates
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNewQuery = () => {
+      fetchQueries();
+      showToast("New student query received!", "info");
+    };
+
+    socket.on('newQuery', handleNewQuery);
+
+    return () => {
+      socket.off('newQuery', handleNewQuery);
+    };
+  }, [socket, fetchQueries, showToast]);
 
   const handleReply = async (queryId) => {
     if (!replyText.trim()) return;
@@ -48,12 +69,17 @@ export default function QueryResolution() {
       });
 
       if (res.ok) {
+        showToast("Reply sent successfully", "success");
         setReplyText("");
         setReplyingTo(null);
         fetchQueries();
+      } else {
+        const data = await res.json();
+        showToast(data.message || "Failed to send reply", "error");
       }
     } catch (err) {
       console.error("Error sending reply:", err);
+      showToast("Server error", "error");
     } finally {
       setSubmittingReply(false);
     }
@@ -74,9 +100,12 @@ export default function QueryResolution() {
           <h1 className="text-3xl font-display font-bold">Query Resolution</h1>
           <p className="text-secondary/60">Manage and respond to student inquiries.</p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-bold">
-          <Clock size={16} />
-          <span>Auto-refreshing</span>
+        <div className="flex items-center gap-3">
+          <RefreshButton onRefresh={fetchQueries} />
+          <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-bold">
+            <Clock size={16} />
+            <span>Real-time</span>
+          </div>
         </div>
       </div>
 

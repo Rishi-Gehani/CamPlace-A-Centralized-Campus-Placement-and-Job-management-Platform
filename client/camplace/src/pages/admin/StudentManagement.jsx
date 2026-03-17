@@ -1,13 +1,15 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Check, X, Mail, Shield, AlertCircle, Search, Filter, Eye, Trash2, ExternalLink, Users, GraduationCap, BookOpen, Code } from "lucide-react";
+import { Check, X, Mail, Shield, Search, Filter, Eye, Trash2, ExternalLink, Users, GraduationCap, BookOpen, Code } from "lucide-react";
 import { useSocket } from "../../hooks/useSocket";
+import { useToast } from "../../context/ToastContext";
+import RefreshButton from "../../components/RefreshButton";
 
 export default function StudentManagement() {
   const [pendingStudents, setPendingStudents] = useState([]);
   const [allStudents, setAllStudents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState("pending"); // "pending" or "all"
   
   // Search and Filter States
@@ -39,13 +41,15 @@ export default function StudentManagement() {
         const allData = await allRes.json();
         setPendingStudents(pendingData);
         setAllStudents(allData);
+      } else {
+        showToast("Failed to load students", "error");
       }
     } catch {
-      setError("Failed to load students");
+      showToast("Failed to load students", "error");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [showToast]);
 
   useEffect(() => {
     fetchStudents();
@@ -56,12 +60,18 @@ export default function StudentManagement() {
       socket.on('verificationProcessed', () => {
         fetchStudents();
       });
+
+      socket.on('newStudentRegistration', () => {
+        fetchStudents();
+        showToast("New student registration pending verification", "info");
+      });
       
       return () => {
         socket.off('verificationProcessed');
+        socket.off('newStudentRegistration');
       };
     }
-  }, [socket, fetchStudents]);
+  }, [socket, fetchStudents, showToast]);
 
   const handleVerify = async (id, status) => {
     try {
@@ -76,13 +86,14 @@ export default function StudentManagement() {
       });
 
       if (res.ok) {
+        showToast(`Student ${status.toLowerCase()} successfully`, "success");
         fetchStudents();
       } else {
         const data = await res.json();
-        setError(data.message || "Action failed");
+        showToast(data.message || "Action failed", "error");
       }
     } catch {
-      setError("Server error");
+      showToast("Server error", "error");
     }
   };
 
@@ -97,14 +108,15 @@ export default function StudentManagement() {
       });
 
       if (res.ok) {
+        showToast("Student deleted successfully", "success");
         fetchStudents();
         setStudentToDelete(null);
       } else {
         const data = await res.json();
-        setError(data.message || "Delete failed");
+        showToast(data.message || "Delete failed", "error");
       }
     } catch {
-      setError("Server error");
+      showToast("Server error", "error");
     } finally {
       setDeleting(false);
     }
@@ -148,27 +160,26 @@ export default function StudentManagement() {
           <h1 className="text-3xl font-display font-bold text-secondary">Student Management</h1>
           <p className="text-secondary/60 font-medium">Manage student verifications and profiles</p>
         </div>
-        <div className="flex gap-2 p-1 bg-black/5 rounded-2xl w-fit">
-          <button 
-            onClick={() => setActiveTab("pending")}
-            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === "pending" ? "bg-white text-secondary shadow-sm" : "text-secondary/40 hover:text-secondary/60"}`}
-          >
-            Pending ({pendingStudents.length})
-          </button>
-          <button 
-            onClick={() => setActiveTab("all")}
-            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === "all" ? "bg-white text-secondary shadow-sm" : "text-secondary/40 hover:text-secondary/60"}`}
-          >
-            All Students
-          </button>
+        <div className="flex items-center gap-3">
+          <RefreshButton onRefresh={fetchStudents} />
+          <div className="flex gap-2 p-1 bg-black/5 rounded-2xl w-fit">
+            <button 
+              onClick={() => setActiveTab("pending")}
+              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === "pending" ? "bg-white text-secondary shadow-sm" : "text-secondary/40 hover:text-secondary/60"}`}
+            >
+              Pending ({pendingStudents.length})
+            </button>
+            <button 
+              onClick={() => setActiveTab("all")}
+              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === "all" ? "bg-white text-secondary shadow-sm" : "text-secondary/40 hover:text-secondary/60"}`}
+            >
+              All Students
+            </button>
+          </div>
         </div>
       </div>
 
-      {error && (
-        <div className="p-4 bg-red-50 border border-red-100 text-red-600 text-sm rounded-2xl flex items-center gap-3">
-          <AlertCircle size={20} /> {error}
-        </div>
-      )}
+      {/* Alerts removed - using Toast */}
 
       <AnimatePresence mode="wait">
         {activeTab === "pending" ? (

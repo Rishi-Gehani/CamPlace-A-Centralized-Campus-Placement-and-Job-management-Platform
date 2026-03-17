@@ -1,17 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Plus, Search, Filter, Briefcase, Building2, MapPin, 
-  Calendar, Trash2, Edit2, X, AlertCircle,
-  CheckCircle2, Clock, Info, ChevronRight, Tags, ListChecks
+  Calendar, Trash2, Edit2, X,
+  Clock, Info, ChevronRight, Tags, ListChecks
 } from 'lucide-react';
 import JobForm from '../../components/admin/JobForm';
+import { useSocket } from '../../hooks/useSocket';
+import { useToast } from '../../context/ToastContext';
+import RefreshButton from '../../components/RefreshButton';
 
 export default function JobManagement() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const { showToast } = useToast();
+  const socket = useSocket();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('All');
   
@@ -22,11 +25,7 @@ export default function JobManagement() {
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [jobToDelete, setJobToDelete] = useState(null);
 
-  useEffect(() => {
-    fetchJobs();
-  }, []);
-
-  const fetchJobs = async () => {
+  const fetchJobs = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch('http://localhost:3000/api/jobs');
@@ -34,15 +33,47 @@ export default function JobManagement() {
         const data = await res.json();
         setJobs(data);
       } else {
-        setError('Failed to fetch jobs');
+        showToast('Failed to fetch jobs', 'error');
       }
     } catch (err) {
       console.error(err);
-      setError('Server error while fetching jobs');
+      showToast('Server error while fetching jobs', 'error');
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast]);
+
+  useEffect(() => {
+    fetchJobs();
+  }, [fetchJobs]);
+
+  // Socket listeners for real-time updates
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNewJob = () => {
+      fetchJobs();
+      showToast('New job opportunity posted!', 'info');
+    };
+
+    const handleJobUpdate = () => {
+      fetchJobs();
+    };
+
+    const handleJobDelete = () => {
+      fetchJobs();
+    };
+
+    socket.on('newJob', handleNewJob);
+    socket.on('jobUpdated', handleJobUpdate);
+    socket.on('jobDeleted', handleJobDelete);
+
+    return () => {
+      socket.off('newJob', handleNewJob);
+      socket.off('jobUpdated', handleJobUpdate);
+      socket.off('jobDeleted', handleJobDelete);
+    };
+  }, [socket, fetchJobs, showToast]);
 
   const handleCreateOrUpdate = async (formData) => {
     try {
@@ -59,18 +90,17 @@ export default function JobManagement() {
       });
 
       if (res.ok) {
-        setSuccess(`Job ${selectedJob ? 'updated' : 'posted'} successfully!`);
+        showToast(`Job ${selectedJob ? 'updated' : 'posted'} successfully!`, 'success');
         setIsFormOpen(false);
         setSelectedJob(null);
         fetchJobs();
-        setTimeout(() => setSuccess(''), 3000);
       } else {
         const data = await res.json();
-        setError(data.message || 'Operation failed');
+        showToast(data.message || 'Operation failed', 'error');
       }
     } catch (err) {
       console.error(err);
-      setError('Server error');
+      showToast('Server error', 'error');
     }
   };
 
@@ -85,17 +115,16 @@ export default function JobManagement() {
       });
 
       if (res.ok) {
-        setSuccess('Job deleted successfully');
+        showToast('Job deleted successfully', 'success');
         setIsDeleteConfirmOpen(false);
         setJobToDelete(null);
         fetchJobs();
-        setTimeout(() => setSuccess(''), 3000);
       } else {
-        setError('Failed to delete job');
+        showToast('Failed to delete job', 'error');
       }
     } catch (err) {
       console.error(err);
-      setError('Server error');
+      showToast('Server error', 'error');
     }
   };
 
@@ -115,15 +144,18 @@ export default function JobManagement() {
             <h1 className="text-4xl font-display font-bold text-secondary">Job Management</h1>
             <p className="text-secondary/60">Post and manage job opportunities for students</p>
           </div>
-          <button 
-            onClick={() => {
-              setSelectedJob(null);
-              setIsFormOpen(true);
-            }}
-            className="btn-primary flex items-center gap-2 shadow-lg shadow-primary/20"
-          >
-            <Plus size={20} /> Post New Opportunity
-          </button>
+          <div className="flex items-center gap-3">
+            <RefreshButton onRefresh={fetchJobs} />
+            <button 
+              onClick={() => {
+                setSelectedJob(null);
+                setIsFormOpen(true);
+              }}
+              className="btn-primary flex items-center gap-2 shadow-lg shadow-primary/20"
+            >
+              <Plus size={20} /> Post New Opportunity
+            </button>
+          </div>
         </div>
 
         {/* Stats & Filters */}
@@ -168,30 +200,6 @@ export default function JobManagement() {
             </div>
           </div>
         </div>
-
-        {/* Alerts */}
-        <AnimatePresence>
-          {error && (
-            <motion.div 
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 text-sm rounded-2xl flex items-center gap-3"
-            >
-              <AlertCircle size={20} /> {error}
-            </motion.div>
-          )}
-          {success && (
-            <motion.div 
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="mb-6 p-4 bg-emerald-50 border border-emerald-100 text-emerald-600 text-sm rounded-2xl flex items-center gap-3"
-            >
-              <CheckCircle2 size={20} /> {success}
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* Jobs List */}
         {loading ? (

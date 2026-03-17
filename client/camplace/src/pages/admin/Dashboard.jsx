@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "motion/react";
-import { io } from "socket.io-client";
+import { useSocket } from "../../hooks/useSocket";
+import { useToast } from "../../context/ToastContext";
+import RefreshButton from "../../components/RefreshButton";
 import { Users, Briefcase, FileText, ShieldCheck, TrendingUp, PieChart as PieChartIcon, BarChart as BarChartIcon } from "lucide-react";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
@@ -26,6 +28,8 @@ const ChartCard = ({ title, icon: Icon, children }) => (
 export default function AdminDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
+  const socket = useSocket();
   const [error, setError] = useState(null);
 
   const fetchAnalytics = useCallback(async () => {
@@ -54,19 +58,22 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchAnalytics();
-    
-    // Connect to Socket.io for real-time updates
-    const socket = io();
-    
-    socket.on('analyticsUpdated', () => {
-      console.log('Analytics updated, fetching new data...');
+  }, [fetchAnalytics]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleAnalyticsUpdate = () => {
       fetchAnalytics();
-    });
+      showToast("Dashboard analytics updated", "info");
+    };
+
+    socket.on('analyticsUpdated', handleAnalyticsUpdate);
 
     return () => {
-      socket.disconnect();
+      socket.off('analyticsUpdated', handleAnalyticsUpdate);
     };
-  }, [fetchAnalytics]);
+  }, [socket, fetchAnalytics, showToast]);
 
   if (loading) {
     return (
@@ -121,6 +128,7 @@ export default function AdminDashboard() {
           <h1 className="text-3xl font-display font-bold text-secondary">Admin Dashboard</h1>
           <p className="text-secondary/60 font-medium text-lg">Real-time insights into recruitment and placement performance.</p>
         </div>
+        <RefreshButton onRefresh={fetchAnalytics} />
       </div>
 
       {/* Summary Cards */}

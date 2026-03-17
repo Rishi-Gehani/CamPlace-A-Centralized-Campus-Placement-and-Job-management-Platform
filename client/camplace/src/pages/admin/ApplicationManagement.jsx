@@ -1,7 +1,10 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { Search, CheckCircle2, XCircle, AlertCircle, ArrowRight, Download, Filter } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { motion } from "motion/react";
+import { Search, XCircle, AlertCircle, ArrowRight, Download, Filter } from "lucide-react";
 import * as XLSX from 'xlsx';
+import { useSocket } from "../../hooks/useSocket";
+import { useToast } from "../../context/ToastContext";
+import RefreshButton from "../../components/RefreshButton";
 
 const STAGES = [
   { id: 'APPLIED', label: 'Applied' },
@@ -16,18 +19,14 @@ const STAGES = [
 export default function ApplicationManagement() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const { showToast } = useToast();
+  const socket = useSocket();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [companyFilter, setCompanyFilter] = useState("ALL");
   const [updatingId, setUpdatingId] = useState(null);
 
-  useEffect(() => {
-    fetchApplications();
-  }, []);
-
-  const fetchApplications = async () => {
+  const fetchApplications = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch('http://localhost:3000/api/applications/admin', {
@@ -37,15 +36,41 @@ export default function ApplicationManagement() {
         const data = await res.json();
         setApplications(data);
       } else {
-        setError("Failed to fetch applications");
+        showToast("Failed to fetch applications", "error");
       }
     } catch (err) {
       console.error(err);
-      setError("Server error");
+      showToast("Server error", "error");
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast]);
+
+  useEffect(() => {
+    fetchApplications();
+  }, [fetchApplications]);
+
+  // Socket listeners for real-time updates
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNewApplication = () => {
+      fetchApplications();
+      showToast("New application received!", "info");
+    };
+
+    const handleApplicationUpdate = () => {
+      fetchApplications();
+    };
+
+    socket.on('newApplication', handleNewApplication);
+    socket.on('applicationUpdate', handleApplicationUpdate);
+
+    return () => {
+      socket.off('newApplication', handleNewApplication);
+      socket.off('applicationUpdate', handleApplicationUpdate);
+    };
+  }, [socket, fetchApplications, showToast]);
 
   const updateStatus = async (appId, newStatus) => {
     try {
@@ -60,17 +85,15 @@ export default function ApplicationManagement() {
       });
 
       if (res.ok) {
-        setSuccess("Status updated successfully");
+        showToast(`Application ${newStatus.toLowerCase()} successfully`, "success");
         fetchApplications();
-        setTimeout(() => setSuccess(""), 3000);
       } else {
         const data = await res.json();
-        setError(data.message || "Failed to update status");
-        setTimeout(() => setError(""), 3000);
+        showToast(data.message || "Failed to update status", "error");
       }
     } catch (err) {
       console.error(err);
-      setError("Server error");
+      showToast("Server error", "error");
     } finally {
       setUpdatingId(null);
     }
@@ -137,6 +160,7 @@ export default function ApplicationManagement() {
           <p className="text-secondary/40 font-medium">Review and manage student job applications.</p>
         </div>
         <div className="flex items-center gap-3">
+          <RefreshButton onRefresh={fetchApplications} />
           <button 
             onClick={exportToExcel}
             className="btn-secondary !py-2.5 !px-5 flex items-center gap-2 text-sm shadow-sm"
@@ -188,20 +212,6 @@ export default function ApplicationManagement() {
           </div>
         </div>
       </div>
-
-      {/* Alerts */}
-      <AnimatePresence>
-        {error && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="p-4 bg-red-50 text-red-600 rounded-2xl flex items-center gap-3">
-            <AlertCircle size={20} /> {error}
-          </motion.div>
-        )}
-        {success && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="p-4 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center gap-3">
-            <CheckCircle2 size={20} /> {success}
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Table */}
       <div className="bg-white rounded-[2.5rem] border border-black/5 shadow-sm overflow-hidden">

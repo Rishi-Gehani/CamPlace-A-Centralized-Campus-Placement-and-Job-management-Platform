@@ -49,16 +49,13 @@ export default function NotificationBell() {
 
   useEffect(() => {
     if (user) {
-      fetchNotifications();
+      // Use setTimeout to avoid synchronous setState warning in effect
+      const timer = setTimeout(() => {
+        fetchNotifications();
+      }, 0);
+      return () => clearTimeout(timer);
     }
-  }, [user, fetchNotifications]);
-
-  // Refresh when panel is opened
-  useEffect(() => {
-    if (isOpen && user) {
-      fetchNotifications();
-    }
-  }, [isOpen, user, fetchNotifications]);
+  }, [user, isOpen, fetchNotifications]);
 
   useEffect(() => {
     if (socket) {

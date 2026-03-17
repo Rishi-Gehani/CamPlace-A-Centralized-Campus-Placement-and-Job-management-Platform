@@ -43,8 +43,8 @@ export default function AdminLayout() {
   return (
     <div className="min-h-screen bg-[#F8F9FA] flex">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-72 bg-secondary text-white fixed inset-y-0 left-0 z-50">
-        <div className="p-8">
+      <aside className="hidden lg:flex flex-col w-72 bg-secondary text-white fixed inset-y-0 left-0 z-50 overflow-y-auto scrollbar-hide">
+        <div className="p-8 shrink-0">
           <Link to="/admin" className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
               <Shield className="text-secondary" size={24} />
