@@ -1,13 +1,14 @@
 import { motion } from "motion/react";
-import { Search, ArrowRight, TrendingUp, Users, Building2, CheckCircle2, MessageSquare, ShieldCheck, Briefcase } from "lucide-react";
+import { Search, ArrowRight, TrendingUp, Users, Building2, CheckCircle2, MessageSquare, ShieldCheck, Briefcase, GraduationCap, ClipboardCheck, LayoutDashboard } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const { user, openAuthModal } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     if (user?.role === 'admin') {
@@ -22,6 +23,18 @@ export default function Home() {
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location, openAuthModal, navigate]);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (!user) {
+      openAuthModal('login');
+      return;
+    }
+    
+    // Redirect to jobs page with search query
+    // The Jobs page will handle verification check
+    navigate(`/jobs?search=${encodeURIComponent(searchQuery)}`);
+  };
 
   const handleProtectedAction = (e, mode = 'login') => {
     if (!user) {
@@ -45,34 +58,35 @@ export default function Home() {
 
   const features = [
     {
-      title: "Job & Internship Opportunities",
-      desc: "Students can explore and apply to verified job and internship openings.",
-      icon: <Briefcase size={24} />,
+      title: "Centralized Job Board",
+      desc: "Access all campus placement drives and internship opportunities in one place.",
+      icon: <LayoutDashboard size={24} />,
     },
     {
-      title: "Smart Job Search",
-      desc: "Search jobs by company, role, or location using advanced filters.",
-      icon: <Search size={24} />,
-    },
-    {
-      title: "Application Tracking",
-      desc: "Students can monitor the real-time status of their job applications.",
-      icon: <TrendingUp size={24} />,
-    },
-    {
-      title: "Discussion Forum",
-      desc: "Share placement experiences, tips, and ask questions to the community.",
+      title: "Real-time Notifications",
+      desc: "Get instant alerts for new job postings, application status changes, and notices.",
       icon: <MessageSquare size={24} />,
     },
     {
-      title: "Admin Management",
-      desc: "Admins manage job postings, students, and placement activities efficiently.",
-      icon: <ShieldCheck size={24} />,
+      title: "Placement Readiness Quiz",
+      desc: "Check your readiness with our upcoming module. Analyze your skills, internships, and projects to get personalized career insights.",
+      icon: <ClipboardCheck size={24} />,
+      isNew: true
     },
     {
-      title: "Partner Management",
-      desc: "Maintain company partnerships and publish opportunities seamlessly.",
-      icon: <Building2 size={24} />,
+      title: "Verified Student Profiles",
+      desc: "Build a professional profile that is verified by the placement cell for authenticity.",
+      icon: <GraduationCap size={24} />,
+    },
+    {
+      title: "Application Tracking",
+      desc: "Monitor your journey from initial application to final selection with a detailed timeline.",
+      icon: <TrendingUp size={24} />,
+    },
+    {
+      title: "Secure Data Management",
+      desc: "Your academic and personal data is handled with the highest security standards.",
+      icon: <ShieldCheck size={24} />,
     },
   ];
 
@@ -113,26 +127,21 @@ export default function Home() {
                 A centralized platform where students can explore job opportunities, apply to internships, and connect with top hiring companies.
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4">
+              <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-grow max-w-md">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/40" size={20} />
                   <input
                     type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search jobs, internships..."
                     className="w-full !pl-14 pr-4 py-4 rounded-full border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                   />
                 </div>
-                {user ? (
-                  <button className="btn-secondary whitespace-nowrap">Search Jobs</button>
-                ) : (
-                  <button 
-                    onClick={() => openAuthModal('login')}
-                    className="btn-secondary whitespace-nowrap"
-                  >
-                    Get Started
-                  </button>
-                )}
-              </div>
+                <button type="submit" className="btn-secondary whitespace-nowrap">
+                  {user ? "Search Jobs" : "Get Started"}
+                </button>
+              </form>
 
               <div className="flex items-center gap-4 pt-4">
                 <div className="flex -space-x-3">
@@ -252,8 +261,13 @@ export default function Home() {
                 viewport={{ once: true }}
                 className="p-10 rounded-3xl bg-white border border-black/5 shadow-sm hover-card space-y-6"
               >
-                <div className="w-12 h-12 rounded-xl bg-secondary text-primary flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-secondary text-primary flex items-center justify-center relative">
                   {feature.icon}
+                  {feature.isNew && (
+                    <span className="absolute -top-2 -right-2 bg-primary text-secondary text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                      NEW
+                    </span>
+                  )}
                 </div>
                 <h3 className="text-xl font-bold">{feature.title}</h3>
                 <p className="body-text !text-base">{feature.desc}</p>
@@ -287,9 +301,9 @@ export default function Home() {
                 ))}
               </div>
               
-              <button className="btn-secondary flex items-center gap-2 group">
+              <Link to="/help" className="btn-secondary inline-flex items-center gap-2 group">
                 Learn More <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-              </button>
+              </Link>
             </div>
             
             <div className="relative">

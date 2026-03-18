@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Search, Filter, Clock, XCircle, X, Info, ListChecks, Tags, AlertCircle, CheckCircle2, Building2, MapPin, Calendar } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
-import { Navigate, Link } from "react-router-dom";
+import { Navigate, Link, useSearchParams } from "react-router-dom";
 import { useSocket } from "../hooks/useSocket";
 
 export default function Jobs() {
   const { user, loading: authLoading } = useAuth();
   const socket = useSocket();
+  const [searchParams] = useSearchParams();
   const [jobs, setJobs] = useState([]);
   const [myApplications, setMyApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,7 +16,7 @@ export default function Jobs() {
   const [success, setSuccess] = useState("");
   
   // Search & Filter
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [selectedTags, setSelectedTags] = useState([]);
   const [statusFilter, setStatusFilter] = useState("All"); // All, Applied, Closed
   const [isFilterOpen, setIsFilterOpen] = useState(false);

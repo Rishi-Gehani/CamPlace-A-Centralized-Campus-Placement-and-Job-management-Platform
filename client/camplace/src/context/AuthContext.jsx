@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from './AuthContext';
+import AuthStatusPopup from '../components/AuthStatusPopup';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -8,6 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login');
+  const [authStatus, setAuthStatus] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -55,6 +57,11 @@ export const AuthProvider = ({ children }) => {
       if (res.ok) {
         localStorage.setItem('token', data.token);
         setUser(data.user);
+        setAuthStatus({ 
+          type: 'login', 
+          message: `Welcome back, ${data.user.name}! Logging you in...` 
+        });
+        setTimeout(() => setAuthStatus(null), 3000);
         return data.user;
       } else {
         setError(data.message || 'Login failed');
@@ -80,6 +87,11 @@ export const AuthProvider = ({ children }) => {
       if (res.ok) {
         localStorage.setItem('token', data.token);
         setUser(data.user);
+        setAuthStatus({ 
+          type: 'register', 
+          message: `Welcome to CamPlace, ${data.user.name}! Your account has been created.` 
+        });
+        setTimeout(() => setAuthStatus(null), 3000);
         return data.user;
       } else {
         setError(data.message || 'Registration failed');
@@ -92,11 +104,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    setUser(null);
-    // Redirect to home and open login modal
-    navigate('/', { replace: true });
-    openAuthModal('login');
+    setAuthStatus({ 
+      type: 'logout', 
+      message: 'Logging you out safely. See you soon!' 
+    });
+    
+    setTimeout(() => {
+      localStorage.removeItem('token');
+      setUser(null);
+      setAuthStatus(null);
+      navigate('/', { replace: true });
+      openAuthModal('login');
+    }, 3500);
   };
 
   const openAuthModal = (mode = 'login') => {
@@ -122,6 +141,7 @@ export const AuthProvider = ({ children }) => {
       closeAuthModal
     }}>
       {children}
+      <AuthStatusPopup status={authStatus} />
     </AuthContext.Provider>
   );
 };
