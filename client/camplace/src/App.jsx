@@ -14,6 +14,7 @@ import ChangePassword from "./pages/ChangePassword.jsx";
 import Notices from "./pages/Notices.jsx";
 import StudentInterviewResources from "./pages/InterviewResources.jsx";
 import HelpManual from "./pages/HelpManual.jsx";
+import PrivacyPolicy from "./pages/PrivacyPolicy.jsx";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard.jsx";
@@ -62,6 +63,7 @@ export default function App() {
               />
               <Route path="notices" element={<Notices />} />
               <Route path="help" element={<HelpManual />} />
+              <Route path="privacy" element={<PrivacyPolicy />} />
               <Route 
                 path="interview-resources" 
                 element={

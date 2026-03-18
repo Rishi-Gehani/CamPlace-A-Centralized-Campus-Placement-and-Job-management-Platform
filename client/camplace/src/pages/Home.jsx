@@ -3,6 +3,7 @@ import { Search, ArrowRight, TrendingUp, Users, Building2, CheckCircle2, Message
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useEffect, useState } from "react";
+import RefreshButton from "../components/RefreshButton";
 
 export default function Home() {
   const { user, openAuthModal } = useAuth();
@@ -105,7 +106,15 @@ export default function Home() {
     { id: "infosys", name: "Infosys", logo: "https://upload.wikimedia.org/wikipedia/commons/9/95/Infosys_logo.svg" },
     { id: "deloitte", name: "Deloitte", logo: "https://www2.deloitte.com/content/dam/Deloitte/in/Images/promo_images/deloitte-logo-black.png" },
     { id: "wipro", name: "Wipro", logo: "https://upload.wikimedia.org/wikipedia/commons/a/a0/Wipro_Primary_Logo_Color_RGB.svg" },
-    { id: "accenture", name: "Accenture", logo: "https://upload.wikimedia.org/wikipedia/commons/c/cd/Accenture.svg" }
+    { id: "accenture", name: "Accenture", logo: "https://upload.wikimedia.org/wikipedia/commons/c/cd/Accenture.svg" },
+    { id: "meta", name: "Meta", logo: "https://upload.wikimedia.org/wikipedia/commons/7/7b/Meta_Platforms_Inc._logo.svg" },
+    { id: "apple", name: "Apple", logo: "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" },
+    { id: "netflix", name: "Netflix", logo: "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" },
+    { id: "ibm", name: "IBM", logo: "https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg" },
+    { id: "oracle", name: "Oracle", logo: "https://upload.wikimedia.org/wikipedia/commons/5/50/Oracle_logo.svg" },
+    { id: "cisco", name: "Cisco", logo: "https://upload.wikimedia.org/wikipedia/commons/0/08/Cisco_logo_blue_2016.svg" },
+    { id: "intel", name: "Intel", logo: "https://upload.wikimedia.org/wikipedia/commons/c/c9/Intel-logo.svg" },
+    { id: "nvidia", name: "NVIDIA", logo: "https://upload.wikimedia.org/wikipedia/commons/2/21/Nvidia_logo.svg" }
   ];
 
   const testimonials = [
@@ -141,6 +150,7 @@ export default function Home() {
 
   return (
     <div className="overflow-hidden">
+      <RefreshButton onRefresh={() => window.location.reload()} className="fixed top-24 right-8 z-50 !bg-white/80 backdrop-blur-sm" />
       {/* Hero Section */}
       <section className="relative pt-20 pb-32 lg:pt-32 lg:pb-48">
         <div className="page-container">

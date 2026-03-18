@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Lock, ShieldCheck, AlertCircle, CheckCircle2, LogOut, ArrowRight } from "lucide-react";
+import { Lock, ShieldCheck, AlertCircle, CheckCircle2, LogOut, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 
@@ -15,6 +15,15 @@ export default function ChangePassword() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false
+  });
+
+  const togglePasswordVisibility = (field) => {
+    setShowPasswords(prev => ({ ...prev, [field]: !prev[field] }));
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -120,14 +129,21 @@ export default function ChangePassword() {
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" size={18} />
                   <input
-                    type="password"
+                    type={showPasswords.current ? "text" : "password"}
                     name="currentPassword"
                     value={formData.currentPassword}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className="w-full pl-12 pr-4 py-4 rounded-2xl border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                    className="w-full pl-12 pr-12 py-4 rounded-2xl border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                     required
                   />
+                  <button
+                    type="button"
+                    onClick={() => togglePasswordVisibility("current")}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary/30 hover:text-secondary/60 transition-colors"
+                  >
+                    {showPasswords.current ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
               </div>
 
@@ -136,14 +152,21 @@ export default function ChangePassword() {
                 <div className="relative">
                   <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" size={18} />
                   <input
-                    type="password"
+                    type={showPasswords.new ? "text" : "password"}
                     name="newPassword"
                     value={formData.newPassword}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className="w-full pl-12 pr-4 py-4 rounded-2xl border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                    className="w-full pl-12 pr-12 py-4 rounded-2xl border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                     required
                   />
+                  <button
+                    type="button"
+                    onClick={() => togglePasswordVisibility("new")}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary/30 hover:text-secondary/60 transition-colors"
+                  >
+                    {showPasswords.new ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
               </div>
 
@@ -152,15 +175,22 @@ export default function ChangePassword() {
                 <div className="relative">
                   <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" size={18} />
                   <input
-                    type="password"
+                    type={showPasswords.confirm ? "text" : "password"}
                     name="confirmNewPassword"
                     value={formData.confirmNewPassword}
                     onChange={handleChange}
                     onPaste={handlePaste}
                     placeholder="••••••••"
-                    className="w-full pl-12 pr-4 py-4 rounded-2xl border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                    className="w-full pl-12 pr-12 py-4 rounded-2xl border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                     required
                   />
+                  <button
+                    type="button"
+                    onClick={() => togglePasswordVisibility("confirm")}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary/30 hover:text-secondary/60 transition-colors"
+                  >
+                    {showPasswords.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
               </div>
             </div>

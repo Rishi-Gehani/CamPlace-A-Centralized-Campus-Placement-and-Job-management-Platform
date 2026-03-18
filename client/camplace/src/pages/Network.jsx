@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
-import { Building2, Users, Award, CheckCircle2, ArrowRight } from "lucide-react";
+import { Building2, Users, Award, CheckCircle2 } from "lucide-react";
+import RefreshButton from "../components/RefreshButton";
 
 export default function Partners() {
   const partners = [
@@ -62,11 +63,92 @@ export default function Partners() {
       highestPackage: "₹18 LPA",
       criteria: "Good communication skills, analytical thinking, and basic coding knowledge. 60% throughout.",
       tags: ["Consulting", "Big 4", "Finance"]
+    },
+    {
+      id: "meta",
+      name: "Meta",
+      logo: "https://upload.wikimedia.org/wikipedia/commons/7/7b/Meta_Platforms_Inc._logo.svg",
+      description: "Building technologies that help people connect, find communities, and grow businesses.",
+      process: "Technical Screening -> 3-4 Product/System Interviews -> Behavioral Round",
+      highestPackage: "₹60 LPA",
+      criteria: "Strong product sense, system design, and coding skills. Focus on scalability.",
+      tags: ["Social Media", "Tech Giant", "MNC"]
+    },
+    {
+      id: "apple",
+      name: "Apple",
+      logo: "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg",
+      description: "Designing and developing consumer electronics, computer software, and online services.",
+      process: "Technical Screening -> 4-5 In-depth Technical Interviews -> Team Match",
+      highestPackage: "₹55 LPA",
+      criteria: "Excellence in hardware/software integration, attention to detail, and OS fundamentals.",
+      tags: ["Hardware", "Software", "Design"]
+    },
+    {
+      id: "netflix",
+      name: "Netflix",
+      logo: "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
+      description: "The world's leading streaming entertainment service with millions of paid memberships.",
+      process: "Technical Screening -> 4-5 Senior Engineer Interviews -> Culture Fit",
+      highestPackage: "₹65 LPA",
+      criteria: "Senior-level experience, strong culture alignment, and expertise in distributed systems.",
+      tags: ["Streaming", "Entertainment", "Tech"]
+    },
+    {
+      id: "ibm",
+      name: "IBM",
+      logo: "https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg",
+      description: "A global technology and innovation company, the largest technology and consulting employer in the world.",
+      process: "Cognitive Ability Test -> Technical Interview -> HR Round",
+      highestPackage: "₹22 LPA",
+      criteria: "Knowledge of AI, Cloud, and Enterprise systems. Good problem-solving skills.",
+      tags: ["Consulting", "AI", "Cloud"]
+    },
+    {
+      id: "oracle",
+      name: "Oracle",
+      logo: "https://upload.wikimedia.org/wikipedia/commons/5/50/Oracle_logo.svg",
+      description: "Providing a comprehensive and fully integrated stack of cloud applications and platform services.",
+      process: "Online Test -> 2-3 Technical Interviews -> HR Round",
+      highestPackage: "₹38 LPA",
+      criteria: "Strong database knowledge, Java proficiency, and analytical skills.",
+      tags: ["Database", "Cloud", "Enterprise"]
+    },
+    {
+      id: "cisco",
+      name: "Cisco",
+      logo: "https://upload.wikimedia.org/wikipedia/commons/0/08/Cisco_logo_blue_2016.svg",
+      description: "The worldwide leader in networking that transforms how people connect, communicate and collaborate.",
+      process: "Online Test -> Technical Interview -> Managerial Round -> HR Round",
+      highestPackage: "₹32 LPA",
+      criteria: "Strong networking fundamentals, C/C++ knowledge, and logical reasoning.",
+      tags: ["Networking", "Hardware", "Security"]
+    },
+    {
+      id: "intel",
+      name: "Intel",
+      logo: "https://upload.wikimedia.org/wikipedia/commons/c/c9/Intel-logo.svg",
+      description: "Designing and building the essential technologies that serve as the foundation for the world's computing devices.",
+      process: "Technical Test -> 2 Technical Interviews -> HR Round",
+      highestPackage: "₹35 LPA",
+      criteria: "Expertise in VLSI, Embedded Systems, and Computer Architecture.",
+      tags: ["Hardware", "Semiconductors", "Tech"]
+    },
+    {
+      id: "nvidia",
+      name: "NVIDIA",
+      logo: "https://upload.wikimedia.org/wikipedia/commons/2/21/Nvidia_logo.svg",
+      description: "The pioneer of GPU-accelerated computing, specializing in graphics and AI technology.",
+      process: "Technical Screening -> 3-4 Technical Interviews -> HR Round",
+      highestPackage: "₹48 LPA",
+      criteria: "Strong C++ skills, knowledge of Graphics, AI, and Parallel Computing.",
+      tags: ["AI", "Graphics", "Hardware"]
     }
   ];
 
   return (
     <div className="pb-24">
+      <RefreshButton onRefresh={() => window.location.reload()} className="fixed top-24 right-8 z-50 !bg-white/80 backdrop-blur-sm" />
       {/* Hero Section */}
       <section className="bg-secondary text-white py-24 lg:py-32">
         <div className="page-container text-center space-y-6">
@@ -168,9 +250,6 @@ export default function Partners() {
                   </div>
 
                   <div className="pt-4 flex justify-end">
-                    <button className="flex items-center gap-2 text-secondary font-bold group-hover:text-primary transition-colors">
-                      View Open Positions <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                    </button>
                   </div>
                 </div>
               </div>

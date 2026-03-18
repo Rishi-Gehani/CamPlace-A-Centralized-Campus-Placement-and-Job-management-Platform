@@ -6,6 +6,8 @@ import { Navigate, Link } from 'react-router-dom';
 import { DEPARTMENTS, COLLEGES } from '../constants/education';
 import ApplicationTracker from '../components/ApplicationTracker';
 import { io } from 'socket.io-client';
+import RefreshButton from '../components/RefreshButton';
+
 
 const SectionHeader = ({ icon: Icon, title }) => (
   <div className="flex items-center gap-3 mb-6 pb-2 border-b border-black/5">
@@ -194,6 +196,7 @@ export default function Profile() {
               </div>
             </div>
             <div className="flex gap-3">
+              <RefreshButton onRefresh={fetchProfile} className="!bg-white/80 backdrop-blur-sm" />
               {!isEditing && activeTab === 'profile' && (
                 <button 
                   onClick={() => setIsEditing(true)}
