@@ -7,8 +7,9 @@ import About from "./pages/About.jsx";
 import Contact from "./pages/Contact.jsx";
 import Jobs from "./pages/Jobs.jsx";
 import Forum from "./pages/Forum.jsx";
-import Partners from "./pages/Partners.jsx";
+import Network from "./pages/Network.jsx";
 import Profile from "./pages/Profile.jsx";
+import ScrollToTop from "./components/ScrollToTop.jsx";
 import ChangePassword from "./pages/ChangePassword.jsx";
 import Notices from "./pages/Notices.jsx";
 import StudentInterviewResources from "./pages/InterviewResources.jsx";
@@ -33,13 +34,14 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <ToastProvider>
+          <ScrollToTop />
           <Routes>
             {/* Public & Student Routes */}
             <Route path="/" element={<Layout />}>
               <Route index element={<Home />} />
               <Route path="about" element={<About />} />
               <Route path="jobs" element={<Jobs />} />
-              <Route path="partners" element={<Partners />} />
+              <Route path="network" element={<Network />} />
               <Route path="forum" element={<Forum />} />
               <Route path="contact" element={<Contact />} />
               <Route 

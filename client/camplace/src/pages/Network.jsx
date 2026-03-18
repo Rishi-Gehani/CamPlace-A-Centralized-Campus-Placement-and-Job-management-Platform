@@ -4,24 +4,57 @@ import { Building2, Users, Award, CheckCircle2, ArrowRight } from "lucide-react"
 export default function Partners() {
   const partners = [
     {
+      id: "google",
       name: "Google",
       logo: "https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png",
       description: "A global leader in technology, specializing in Internet-related services and products.",
-      process: "Online Assessment -> 3-4 Technical Interviews -> HR Round",
+      process: "Aptitude Test -> 3-4 Technical Interviews -> HR Round",
       highestPackage: "₹64 LPA",
       criteria: "Strong DSA, Problem Solving, and System Design skills. Minimum 7.5 CGPA.",
       tags: ["Tech Giant", "MNC", "Software"]
     },
     {
+      id: "microsoft",
       name: "Microsoft",
       logo: "https://img-prod-cms-rt-microsoft-com.akamaized.net/cms/api/am/imageFileData/RE1Mu3b?ver=5c31",
       description: "Empowering every person and every organization on the planet to achieve more.",
-      process: "Coding Round -> 2-3 Technical Interviews -> Managerial Round",
+      process: "Aptitude Test -> 2-3 Technical Interviews -> Managerial Round",
       highestPackage: "₹51 LPA",
       criteria: "Proficiency in C++/Java, OS, Networking, and Database management. No active backlogs.",
       tags: ["Software", "Cloud", "Hardware"]
     },
     {
+      id: "amazon",
+      name: "Amazon",
+      logo: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
+      description: "Earth's most customer-centric company, where people can find and discover anything they might want to buy online.",
+      process: "Aptitude Test -> Technical Assessment -> 2-3 Technical Interviews -> Bar Raiser Round",
+      highestPackage: "₹45 LPA",
+      criteria: "Strong analytical skills, customer obsession, and proficiency in scalable systems.",
+      tags: ["E-commerce", "Cloud", "MNC"]
+    },
+    {
+      id: "tcs",
+      name: "TCS",
+      logo: "https://upload.wikimedia.org/wikipedia/commons/b/b1/Tata_Consultancy_Services_Logo.svg",
+      description: "A global leader in IT services, consulting & business solutions with a large network of innovation & delivery centers.",
+      process: "Aptitude Test (NQT) -> Technical Interview -> HR Round",
+      highestPackage: "₹12 LPA",
+      criteria: "Good academic record (60%+), basic programming knowledge, and logical reasoning.",
+      tags: ["IT Services", "Consulting", "Global"]
+    },
+    {
+      id: "infosys",
+      name: "Infosys",
+      logo: "https://upload.wikimedia.org/wikipedia/commons/9/95/Infosys_logo.svg",
+      description: "A global leader in next-generation digital services and consulting.",
+      process: "Aptitude Test -> Technical Interview -> HR Round",
+      highestPackage: "₹10 LPA",
+      criteria: "Strong fundamentals in computer science, good communication, and 60% throughout.",
+      tags: ["IT Services", "Digital", "Consulting"]
+    },
+    {
+      id: "deloitte",
       name: "Deloitte",
       logo: "https://www2.deloitte.com/content/dam/Deloitte/in/Images/promo_images/deloitte-logo-black.png",
       description: "Providing industry-leading audit, consulting, tax, and advisory services.",
@@ -49,7 +82,7 @@ export default function Partners() {
             animate={{ opacity: 1, y: 0 }}
             className="hero-title"
           >
-            Our Hiring <span className="text-primary">Partners</span>
+            Our Hiring <span className="text-primary">Network</span>
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -68,11 +101,12 @@ export default function Partners() {
           {partners.map((partner, idx) => (
             <motion.div
               key={partner.name}
+              id={partner.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
               viewport={{ once: true }}
-              className="group bg-white rounded-[3rem] border border-black/5 shadow-sm hover:shadow-2xl hover:border-primary/20 transition-all overflow-hidden"
+              className="group bg-white rounded-[3rem] border border-black/5 shadow-sm hover:shadow-2xl hover:border-primary/20 transition-all overflow-hidden scroll-mt-24"
             >
               <div className="grid grid-cols-1 lg:grid-cols-12">
                 {/* Left: Logo & Basic Info */}

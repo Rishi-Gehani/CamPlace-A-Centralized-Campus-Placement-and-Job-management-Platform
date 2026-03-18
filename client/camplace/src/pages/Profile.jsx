@@ -184,8 +184,12 @@ export default function Profile() {
                 <div className="px-4 py-2 bg-black/5 rounded-xl text-sm font-bold text-secondary/60 flex items-center gap-2">
                   <Shield size={14} /> {profileData?.studentId}
                 </div>
-                <div className="px-4 py-2 bg-black/5 rounded-xl text-sm font-bold text-secondary/60 flex items-center gap-2">
-                  <Briefcase size={14} /> {profileData?.placementStatus?.replace('_', ' ')}
+                <div className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 ${
+                  profileData?.placementStatus === 'PLACED' 
+                    ? 'bg-emerald-100 text-emerald-600' 
+                    : 'bg-amber-100 text-amber-600'
+                }`}>
+                  <Briefcase size={14} /> {profileData?.placementStatus?.replace('_', ' ') || 'NOT PLACED'}
                 </div>
               </div>
             </div>

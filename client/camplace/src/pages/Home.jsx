@@ -98,7 +98,45 @@ export default function Home() {
   ];
 
   const partners = [
-    "TCS", "Infosys", "Wipro", "Accenture", "Capgemini", "Cognizant"
+    { id: "google", name: "Google", logo: "https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" },
+    { id: "microsoft", name: "Microsoft", logo: "https://img-prod-cms-rt-microsoft-com.akamaized.net/cms/api/am/imageFileData/RE1Mu3b?ver=5c31" },
+    { id: "amazon", name: "Amazon", logo: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" },
+    { id: "tcs", name: "TCS", logo: "https://upload.wikimedia.org/wikipedia/commons/b/b1/Tata_Consultancy_Services_Logo.svg" },
+    { id: "infosys", name: "Infosys", logo: "https://upload.wikimedia.org/wikipedia/commons/9/95/Infosys_logo.svg" },
+    { id: "deloitte", name: "Deloitte", logo: "https://www2.deloitte.com/content/dam/Deloitte/in/Images/promo_images/deloitte-logo-black.png" },
+    { id: "wipro", name: "Wipro", logo: "https://upload.wikimedia.org/wikipedia/commons/a/a0/Wipro_Primary_Logo_Color_RGB.svg" },
+    { id: "accenture", name: "Accenture", logo: "https://upload.wikimedia.org/wikipedia/commons/c/cd/Accenture.svg" }
+  ];
+
+  const testimonials = [
+    {
+      name: "Rahul Sharma",
+      role: "B.Tech CSE, 2024 Batch",
+      text: "This portal helped me easily apply to multiple companies and track my placement journey. The interface is so clean and intuitive!",
+      image: "https://picsum.photos/seed/student1/100/100",
+      company: "Google"
+    },
+    {
+      name: "Sneha Patel",
+      role: "B.Tech IT, 2024 Batch",
+      text: "The real-time notifications were a game changer. I never missed a deadline and got placed in my dream company!",
+      image: "https://picsum.photos/seed/student2/100/100",
+      company: "Microsoft"
+    },
+    {
+      name: "Amit Kumar",
+      role: "B.Tech ECE, 2024 Batch",
+      text: "I love how I can manage my profile and resume in one place. The verification process adds so much value to our applications.",
+      image: "https://picsum.photos/seed/student3/100/100",
+      company: "Amazon"
+    },
+    {
+      name: "Priya Singh",
+      role: "B.Tech CSE, 2024 Batch",
+      text: "The recruitment process details on the Network page helped me prepare specifically for each company's rounds.",
+      image: "https://picsum.photos/seed/student4/100/100",
+      company: "Deloitte"
+    }
   ];
 
   return (
@@ -321,23 +359,28 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Hiring Partners */}
+      {/* Hiring Companies */}
       <section id="partners" className="py-24 bg-white border-y border-black/5">
         <div className="page-container">
           <div className="text-center mb-16 space-y-4">
             <h2 className="text-3xl font-display font-bold text-secondary/40 uppercase tracking-widest">Top Hiring Companies</h2>
-            <Link to="/partners" className="inline-flex items-center gap-2 text-primary font-bold hover:underline">
+            <Link to="/network" className="inline-flex items-center gap-2 text-primary font-bold hover:underline">
               View Recruitment Processes <ArrowRight size={16} />
             </Link>
           </div>
-          <div className="flex flex-wrap justify-center items-center gap-12 lg:gap-24 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-8 items-center opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
             {partners.map((partner) => (
               <Link 
-                key={partner} 
-                to="/partners"
-                className="text-2xl font-display font-black tracking-tighter hover:text-primary transition-colors"
+                key={partner.id} 
+                to={`/network#${partner.id}`}
+                className="flex items-center justify-center p-4 grayscale hover:grayscale-0 hover:scale-110 transition-all duration-300"
               >
-                {partner}
+                <img 
+                  src={partner.logo} 
+                  alt={partner.name} 
+                  className="max-h-12 w-auto object-contain"
+                  referrerPolicy="no-referrer"
+                />
               </Link>
             ))}
           </div>
@@ -345,39 +388,51 @@ export default function Home() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-24 bg-[#F8F9FA]">
+      <section className="py-24 bg-[#F8F9FA] overflow-hidden">
         <div className="page-container">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div className="card-white space-y-8 !p-12">
-              <div className="flex gap-1 text-primary">
-                {[1, 2, 3, 4, 5].map(i => <TrendingUp key={i} size={20} />)}
-              </div>
-              <p className="text-2xl font-medium italic leading-relaxed">
-                “This portal helped me easily apply to multiple companies and track my placement journey. The interface is so clean and intuitive!”
-              </p>
-              <div className="flex items-center gap-4">
-                <img src="https://picsum.photos/seed/student/100/100" alt="Student" className="w-14 h-14 rounded-full" referrerPolicy="no-referrer" />
-                <div>
-                  <p className="font-bold">Rahul Sharma</p>
-                  <p className="text-sm text-secondary/60">B.Tech CSE, 2024 Batch</p>
-                </div>
-              </div>
+          <div className="text-center mb-16 space-y-4">
+            <h2 className="section-title">What Our Students Say</h2>
+            <p className="body-text">Success stories from students who found their career path through CamPlace.</p>
+          </div>
+
+          <div className="relative">
+            <div className="flex overflow-x-auto pb-8 gap-8 snap-x snap-mandatory no-scrollbar scroll-smooth">
+              {testimonials.map((t, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, x: 50 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  viewport={{ once: true }}
+                  className="flex-shrink-0 w-full md:w-[450px] snap-center"
+                >
+                  <div className="card-white h-full space-y-8 !p-10 flex flex-col justify-between hover-card">
+                    <div className="space-y-6">
+                      <div className="flex gap-1 text-primary">
+                        {[1, 2, 3, 4, 5].map(i => <TrendingUp key={i} size={20} />)}
+                      </div>
+                      <p className="text-xl font-medium italic leading-relaxed text-secondary/80">
+                        “{t.text}”
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-4 pt-6 border-t border-black/5">
+                      <img src={t.image} alt={t.name} className="w-14 h-14 rounded-full border-2 border-primary/20" referrerPolicy="no-referrer" />
+                      <div>
+                        <p className="font-bold text-secondary">{t.name}</p>
+                        <p className="text-sm text-secondary/60">{t.role}</p>
+                        <p className="text-xs font-bold text-primary mt-1 uppercase tracking-widest">Placed at {t.company}</p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
             </div>
             
-            <div className="p-12 rounded-[2.5rem] bg-secondary text-white space-y-8">
-              <div className="flex gap-1 text-primary">
-                {[1, 2, 3, 4, 5].map(i => <TrendingUp key={i} size={20} />)}
-              </div>
-              <p className="text-2xl font-medium italic leading-relaxed">
-                “The system streamlined our recruitment process and made student shortlisting significantly easier. Highly recommended for any institution.”
-              </p>
-              <div className="flex items-center gap-4">
-                <img src="https://picsum.photos/seed/recruiter/100/100" alt="Recruiter" className="w-14 h-14 rounded-full" referrerPolicy="no-referrer" />
-                <div>
-                  <p className="font-bold">Priya Verma</p>
-                  <p className="text-sm text-white/60">HR Manager, Tech Corp</p>
-                </div>
-              </div>
+            {/* Scroll Indicators */}
+            <div className="flex justify-center gap-2 mt-4">
+              {testimonials.map((_, idx) => (
+                <div key={idx} className="w-2 h-2 rounded-full bg-primary/20" />
+              ))}
             </div>
           </div>
         </div>
