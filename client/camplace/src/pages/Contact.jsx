@@ -61,10 +61,12 @@ export default function Contact() {
     }
 
     try {
+      const token = localStorage.getItem('token');
       const res = await fetch('http://localhost:3000/api/queries', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'x-auth-token': token
         },
         body: JSON.stringify(formData)
       });

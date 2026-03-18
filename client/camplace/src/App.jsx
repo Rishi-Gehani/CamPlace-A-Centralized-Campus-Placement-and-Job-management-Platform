@@ -29,55 +29,69 @@ import { ToastProvider } from "./context/ToastContext.jsx";
 
 export default function App() {
   return (
-    <AuthProvider>
-      <ToastProvider>
-        <BrowserRouter>
+    <BrowserRouter>
+      <AuthProvider>
+        <ToastProvider>
           <Routes>
-          {/* Public & Student Routes */}
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="about" element={<About />} />
-            <Route path="jobs" element={<Jobs />} />
-            <Route path="partners" element={<Partners />} />
-            <Route path="forum" element={<Forum />} />
-            <Route path="contact" element={<Contact />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="change-password" element={<ChangePassword />} />
-            <Route path="notices" element={<Notices />} />
-            <Route 
-              path="interview-resources" 
-              element={
-                <ProtectedRoute>
-                  <StudentInterviewResources />
-                </ProtectedRoute>
-              } 
-            />
-            <Route path="login" element={<Navigate to="/" state={{ openAuth: 'login' }} />} />
-            <Route path="register" element={<Navigate to="/" state={{ openAuth: 'register' }} />} />
-          </Route>
+            {/* Public & Student Routes */}
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Home />} />
+              <Route path="about" element={<About />} />
+              <Route path="jobs" element={<Jobs />} />
+              <Route path="partners" element={<Partners />} />
+              <Route path="forum" element={<Forum />} />
+              <Route path="contact" element={<Contact />} />
+              <Route 
+                path="profile" 
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="change-password" 
+                element={
+                  <ProtectedRoute>
+                    <ChangePassword />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route path="notices" element={<Notices />} />
+              <Route 
+                path="interview-resources" 
+                element={
+                  <ProtectedRoute>
+                    <StudentInterviewResources />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route path="login" element={<Navigate to="/" state={{ openAuth: 'login' }} />} />
+              <Route path="register" element={<Navigate to="/" state={{ openAuth: 'register' }} />} />
+            </Route>
 
-          {/* Admin Routes */}
-          <Route 
-            path="/admin" 
-            element={
-              <ProtectedRoute role="admin">
-                <AdminLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<AdminDashboard />} />
-            <Route path="students" element={<StudentManagement />} />
-            <Route path="jobs" element={<JobManagement />} />
-            <Route path="applications" element={<ApplicationManagement />} />
-            <Route path="records" element={<PlacementRecords />} />
-            <Route path="reports" element={<AdminInterviewResources />} />
-            <Route path="notices" element={<NoticesManagement />} />
-            <Route path="queries" element={<QueryResolution />} />
-            <Route path="profile" element={<AdminProfile />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </ToastProvider>
-  </AuthProvider>
-);
+            {/* Admin Routes */}
+            <Route 
+              path="/admin" 
+              element={
+                <ProtectedRoute role="admin">
+                  <AdminLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<AdminDashboard />} />
+              <Route path="students" element={<StudentManagement />} />
+              <Route path="jobs" element={<JobManagement />} />
+              <Route path="applications" element={<ApplicationManagement />} />
+              <Route path="records" element={<PlacementRecords />} />
+              <Route path="reports" element={<AdminInterviewResources />} />
+              <Route path="notices" element={<NoticesManagement />} />
+              <Route path="queries" element={<QueryResolution />} />
+              <Route path="profile" element={<AdminProfile />} />
+            </Route>
+          </Routes>
+        </ToastProvider>
+      </AuthProvider>
+    </BrowserRouter>
+  );
 }

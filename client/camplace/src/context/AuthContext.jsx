@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from './AuthContext';
 
 export const AuthProvider = ({ children }) => {
@@ -7,6 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login');
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Check for token in localStorage
@@ -30,6 +32,7 @@ export const AuthProvider = ({ children }) => {
         setUser(data);
       } else {
         localStorage.removeItem('token');
+        setUser(null);
       }
     } catch (err) {
       console.error('Error fetching user:', err);
@@ -91,6 +94,9 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
+    // Redirect to home and open login modal
+    navigate('/', { replace: true });
+    openAuthModal('login');
   };
 
   const openAuthModal = (mode = 'login') => {
