@@ -1,13 +1,15 @@
 import { motion } from "motion/react";
-import { Search, ArrowRight, TrendingUp, Users, Building2, CheckCircle2, MessageSquare, ShieldCheck, Briefcase } from "lucide-react";
+import { Search, ArrowRight, TrendingUp, Users, Building2, CheckCircle2, MessageSquare, ShieldCheck, Briefcase, GraduationCap, ClipboardCheck, LayoutDashboard } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import RefreshButton from "../components/RefreshButton";
 
 export default function Home() {
   const { user, openAuthModal } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     if (user?.role === 'admin') {
@@ -22,6 +24,18 @@ export default function Home() {
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location, openAuthModal, navigate]);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (!user) {
+      openAuthModal('login');
+      return;
+    }
+    
+    // Redirect to jobs page with search query
+    // The Jobs page will handle verification check
+    navigate(`/jobs?search=${encodeURIComponent(searchQuery)}`);
+  };
 
   const handleProtectedAction = (e, mode = 'login') => {
     if (!user) {
@@ -45,34 +59,35 @@ export default function Home() {
 
   const features = [
     {
-      title: "Job & Internship Opportunities",
-      desc: "Students can explore and apply to verified job and internship openings.",
-      icon: <Briefcase size={24} />,
+      title: "Centralized Job Board",
+      desc: "Access all campus placement drives and internship opportunities in one place.",
+      icon: <LayoutDashboard size={24} />,
     },
     {
-      title: "Smart Job Search",
-      desc: "Search jobs by company, role, or location using advanced filters.",
-      icon: <Search size={24} />,
-    },
-    {
-      title: "Application Tracking",
-      desc: "Students can monitor the real-time status of their job applications.",
-      icon: <TrendingUp size={24} />,
-    },
-    {
-      title: "Discussion Forum",
-      desc: "Share placement experiences, tips, and ask questions to the community.",
+      title: "Real-time Notifications",
+      desc: "Get instant alerts for new job postings, application status changes, and notices.",
       icon: <MessageSquare size={24} />,
     },
     {
-      title: "Admin Management",
-      desc: "Admins manage job postings, students, and placement activities efficiently.",
-      icon: <ShieldCheck size={24} />,
+      title: "Placement Readiness Quiz",
+      desc: "Check your readiness with our upcoming module. Analyze your skills, internships, and projects to get personalized career insights.",
+      icon: <ClipboardCheck size={24} />,
+      isNew: true
     },
     {
-      title: "Partner Management",
-      desc: "Maintain company partnerships and publish opportunities seamlessly.",
-      icon: <Building2 size={24} />,
+      title: "Verified Student Profiles",
+      desc: "Build a professional profile that is verified by the placement cell for authenticity.",
+      icon: <GraduationCap size={24} />,
+    },
+    {
+      title: "Application Tracking",
+      desc: "Monitor your journey from initial application to final selection with a detailed timeline.",
+      icon: <TrendingUp size={24} />,
+    },
+    {
+      title: "Secure Data Management",
+      desc: "Your academic and personal data is handled with the highest security standards.",
+      icon: <ShieldCheck size={24} />,
     },
   ];
 
@@ -84,11 +99,58 @@ export default function Home() {
   ];
 
   const partners = [
-    "TCS", "Infosys", "Wipro", "Accenture", "Capgemini", "Cognizant"
+    { id: "google", name: "Google", logo: "https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" },
+    { id: "microsoft", name: "Microsoft", logo: "https://img-prod-cms-rt-microsoft-com.akamaized.net/cms/api/am/imageFileData/RE1Mu3b?ver=5c31" },
+    { id: "amazon", name: "Amazon", logo: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" },
+    { id: "tcs", name: "TCS", logo: "https://upload.wikimedia.org/wikipedia/commons/b/b1/Tata_Consultancy_Services_Logo.svg" },
+    { id: "infosys", name: "Infosys", logo: "https://upload.wikimedia.org/wikipedia/commons/9/95/Infosys_logo.svg" },
+    { id: "deloitte", name: "Deloitte", logo: "https://www2.deloitte.com/content/dam/Deloitte/in/Images/promo_images/deloitte-logo-black.png" },
+    { id: "wipro", name: "Wipro", logo: "https://upload.wikimedia.org/wikipedia/commons/a/a0/Wipro_Primary_Logo_Color_RGB.svg" },
+    { id: "accenture", name: "Accenture", logo: "https://upload.wikimedia.org/wikipedia/commons/c/cd/Accenture.svg" },
+    { id: "meta", name: "Meta", logo: "https://upload.wikimedia.org/wikipedia/commons/7/7b/Meta_Platforms_Inc._logo.svg" },
+    { id: "apple", name: "Apple", logo: "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" },
+    { id: "netflix", name: "Netflix", logo: "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" },
+    { id: "ibm", name: "IBM", logo: "https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg" },
+    { id: "oracle", name: "Oracle", logo: "https://upload.wikimedia.org/wikipedia/commons/5/50/Oracle_logo.svg" },
+    { id: "cisco", name: "Cisco", logo: "https://upload.wikimedia.org/wikipedia/commons/0/08/Cisco_logo_blue_2016.svg" },
+    { id: "intel", name: "Intel", logo: "https://upload.wikimedia.org/wikipedia/commons/c/c9/Intel-logo.svg" },
+    { id: "nvidia", name: "NVIDIA", logo: "https://upload.wikimedia.org/wikipedia/commons/2/21/Nvidia_logo.svg" }
+  ];
+
+  const testimonials = [
+    {
+      name: "Rahul Sharma",
+      role: "B.Tech CSE, 2024 Batch",
+      text: "This portal helped me easily apply to multiple companies and track my placement journey. The interface is so clean and intuitive!",
+      image: "https://picsum.photos/seed/student1/100/100",
+      company: "Google"
+    },
+    {
+      name: "Sneha Patel",
+      role: "B.Tech IT, 2024 Batch",
+      text: "The real-time notifications were a game changer. I never missed a deadline and got placed in my dream company!",
+      image: "https://picsum.photos/seed/student2/100/100",
+      company: "Microsoft"
+    },
+    {
+      name: "Amit Kumar",
+      role: "B.Tech ECE, 2024 Batch",
+      text: "I love how I can manage my profile and resume in one place. The verification process adds so much value to our applications.",
+      image: "https://picsum.photos/seed/student3/100/100",
+      company: "Amazon"
+    },
+    {
+      name: "Priya Singh",
+      role: "B.Tech CSE, 2024 Batch",
+      text: "The recruitment process details on the Network page helped me prepare specifically for each company's rounds.",
+      image: "https://picsum.photos/seed/student4/100/100",
+      company: "Deloitte"
+    }
   ];
 
   return (
     <div className="overflow-hidden">
+      <RefreshButton onRefresh={() => window.location.reload()} className="fixed top-24 right-8 z-50 !bg-white/80 backdrop-blur-sm" />
       {/* Hero Section */}
       <section className="relative pt-20 pb-32 lg:pt-32 lg:pb-48">
         <div className="page-container">
@@ -113,26 +175,21 @@ export default function Home() {
                 A centralized platform where students can explore job opportunities, apply to internships, and connect with top hiring companies.
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4">
+              <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-grow max-w-md">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/40" size={20} />
                   <input
                     type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search jobs, internships..."
                     className="w-full !pl-14 pr-4 py-4 rounded-full border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                   />
                 </div>
-                {user ? (
-                  <button className="btn-secondary whitespace-nowrap">Search Jobs</button>
-                ) : (
-                  <button 
-                    onClick={() => openAuthModal('login')}
-                    className="btn-secondary whitespace-nowrap"
-                  >
-                    Get Started
-                  </button>
-                )}
-              </div>
+                <button type="submit" className="btn-secondary whitespace-nowrap">
+                  {user ? "Search Jobs" : "Get Started"}
+                </button>
+              </form>
 
               <div className="flex items-center gap-4 pt-4">
                 <div className="flex -space-x-3">
@@ -252,8 +309,13 @@ export default function Home() {
                 viewport={{ once: true }}
                 className="p-10 rounded-3xl bg-white border border-black/5 shadow-sm hover-card space-y-6"
               >
-                <div className="w-12 h-12 rounded-xl bg-secondary text-primary flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-secondary text-primary flex items-center justify-center relative">
                   {feature.icon}
+                  {feature.isNew && (
+                    <span className="absolute -top-2 -right-2 bg-primary text-secondary text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                      NEW
+                    </span>
+                  )}
                 </div>
                 <h3 className="text-xl font-bold">{feature.title}</h3>
                 <p className="body-text !text-base">{feature.desc}</p>
@@ -287,9 +349,9 @@ export default function Home() {
                 ))}
               </div>
               
-              <button className="btn-secondary flex items-center gap-2 group">
+              <Link to="/help" className="btn-secondary inline-flex items-center gap-2 group">
                 Learn More <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-              </button>
+              </Link>
             </div>
             
             <div className="relative">
@@ -307,23 +369,28 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Hiring Partners */}
+      {/* Hiring Companies */}
       <section id="partners" className="py-24 bg-white border-y border-black/5">
         <div className="page-container">
           <div className="text-center mb-16 space-y-4">
             <h2 className="text-3xl font-display font-bold text-secondary/40 uppercase tracking-widest">Top Hiring Companies</h2>
-            <Link to="/partners" className="inline-flex items-center gap-2 text-primary font-bold hover:underline">
+            <Link to="/network" className="inline-flex items-center gap-2 text-primary font-bold hover:underline">
               View Recruitment Processes <ArrowRight size={16} />
             </Link>
           </div>
-          <div className="flex flex-wrap justify-center items-center gap-12 lg:gap-24 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-8 items-center opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
             {partners.map((partner) => (
               <Link 
-                key={partner} 
-                to="/partners"
-                className="text-2xl font-display font-black tracking-tighter hover:text-primary transition-colors"
+                key={partner.id} 
+                to={`/network#${partner.id}`}
+                className="flex items-center justify-center p-4 grayscale hover:grayscale-0 hover:scale-110 transition-all duration-300"
               >
-                {partner}
+                <img 
+                  src={partner.logo} 
+                  alt={partner.name} 
+                  className="max-h-12 w-auto object-contain"
+                  referrerPolicy="no-referrer"
+                />
               </Link>
             ))}
           </div>
@@ -331,39 +398,51 @@ export default function Home() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-24 bg-[#F8F9FA]">
+      <section className="py-24 bg-[#F8F9FA] overflow-hidden">
         <div className="page-container">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div className="card-white space-y-8 !p-12">
-              <div className="flex gap-1 text-primary">
-                {[1, 2, 3, 4, 5].map(i => <TrendingUp key={i} size={20} />)}
-              </div>
-              <p className="text-2xl font-medium italic leading-relaxed">
-                “This portal helped me easily apply to multiple companies and track my placement journey. The interface is so clean and intuitive!”
-              </p>
-              <div className="flex items-center gap-4">
-                <img src="https://picsum.photos/seed/student/100/100" alt="Student" className="w-14 h-14 rounded-full" referrerPolicy="no-referrer" />
-                <div>
-                  <p className="font-bold">Rahul Sharma</p>
-                  <p className="text-sm text-secondary/60">B.Tech CSE, 2024 Batch</p>
-                </div>
-              </div>
+          <div className="text-center mb-16 space-y-4">
+            <h2 className="section-title">What Our Students Say</h2>
+            <p className="body-text">Success stories from students who found their career path through CamPlace.</p>
+          </div>
+
+          <div className="relative">
+            <div className="flex overflow-x-auto pb-8 gap-8 snap-x snap-mandatory no-scrollbar scroll-smooth">
+              {testimonials.map((t, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, x: 50 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  viewport={{ once: true }}
+                  className="flex-shrink-0 w-full md:w-[450px] snap-center"
+                >
+                  <div className="card-white h-full space-y-8 !p-10 flex flex-col justify-between hover-card">
+                    <div className="space-y-6">
+                      <div className="flex gap-1 text-primary">
+                        {[1, 2, 3, 4, 5].map(i => <TrendingUp key={i} size={20} />)}
+                      </div>
+                      <p className="text-xl font-medium italic leading-relaxed text-secondary/80">
+                        “{t.text}”
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-4 pt-6 border-t border-black/5">
+                      <img src={t.image} alt={t.name} className="w-14 h-14 rounded-full border-2 border-primary/20" referrerPolicy="no-referrer" />
+                      <div>
+                        <p className="font-bold text-secondary">{t.name}</p>
+                        <p className="text-sm text-secondary/60">{t.role}</p>
+                        <p className="text-xs font-bold text-primary mt-1 uppercase tracking-widest">Placed at {t.company}</p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
             </div>
             
-            <div className="p-12 rounded-[2.5rem] bg-secondary text-white space-y-8">
-              <div className="flex gap-1 text-primary">
-                {[1, 2, 3, 4, 5].map(i => <TrendingUp key={i} size={20} />)}
-              </div>
-              <p className="text-2xl font-medium italic leading-relaxed">
-                “The system streamlined our recruitment process and made student shortlisting significantly easier. Highly recommended for any institution.”
-              </p>
-              <div className="flex items-center gap-4">
-                <img src="https://picsum.photos/seed/recruiter/100/100" alt="Recruiter" className="w-14 h-14 rounded-full" referrerPolicy="no-referrer" />
-                <div>
-                  <p className="font-bold">Priya Verma</p>
-                  <p className="text-sm text-white/60">HR Manager, Tech Corp</p>
-                </div>
-              </div>
+            {/* Scroll Indicators */}
+            <div className="flex justify-center gap-2 mt-4">
+              {testimonials.map((_, idx) => (
+                <div key={idx} className="w-2 h-2 rounded-full bg-primary/20" />
+              ))}
             </div>
           </div>
         </div>

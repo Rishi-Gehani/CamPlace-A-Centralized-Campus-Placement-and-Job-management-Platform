@@ -81,11 +81,6 @@ router.put('/students/verify/:id', adminAuth, async (req, res) => {
               <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px; line-height: 1.6;">Dear ${student.firstName},</p>
               <p style="margin: 0 0 32px 0; color: #475569; font-size: 16px; line-height: 1.6;">We are writing to let you know that your student profile on <strong>CamPlace</strong> has been successfully verified by the administration team. You now have full access to the placement platform.</p>
               <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                <tr>
-                  <td align="center">
-                    <a href="${process.env.APP_URL || '#'}" style="display: inline-block; padding: 16px 32px; background-color: #10b981; color: #ffffff; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 16px;">Login to Portal</a>
-                  </td>
-                </tr>
               </table>
             </td>
           </tr>
@@ -121,10 +116,6 @@ router.put('/students/verify/:id', adminAuth, async (req, res) => {
               <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px; line-height: 1.6;">Dear ${student.firstName},</p>
               <p style="margin: 0 0 32px 0; color: #475569; font-size: 16px; line-height: 1.6;">We recently reviewed your registration on the <strong>CamPlace</strong> platform. At this time, we are unable to verify your profile with the current information provided. Please log in to review and correct your details.</p>
               <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                <tr>
-                  <td align="center">
-                    <a href="${process.env.APP_URL || '#'}" style="display: inline-block; padding: 16px 32px; background-color: #ef4444; color: #ffffff; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 16px;">Review Profile</a>
-                  </td>
                 </tr>
               </table>
             </td>

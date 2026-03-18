@@ -63,6 +63,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
         setError('Please enter a valid 10-digit phone number');
         return;
       }
+      if (/^(\d)\1{9}$/.test(formData.phone)) {
+        setError('Please enter a valid phone number (avoid repeating digits)');
+        return;
+      }
       if (!validatePassword(formData.password)) {
         setError('Password does not meet requirements');
         return;
@@ -87,6 +91,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
       }
       if (formData.cgpa < 0 || formData.cgpa > 10) {
         setError('CGPA must be between 0 and 10');
+        return;
+      }
+      if (formData.backlogs < 0 || formData.backlogs > 6) {
+        setError('Backlogs must be between 0 and 6');
         return;
       }
       if (formData.tenthPercentage < 0 || formData.tenthPercentage > 100 || 

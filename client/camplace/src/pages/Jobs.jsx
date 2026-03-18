@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Search, Filter, Clock, XCircle, X, Info, ListChecks, Tags, AlertCircle, CheckCircle2, Building2, MapPin, Calendar } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
-import { Navigate, Link } from "react-router-dom";
+import { Navigate, Link, useSearchParams } from "react-router-dom";
 import { useSocket } from "../hooks/useSocket";
+import RefreshButton from "../components/RefreshButton";
 
 export default function Jobs() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, refreshUser } = useAuth();
   const socket = useSocket();
+  const [searchParams] = useSearchParams();
   const [jobs, setJobs] = useState([]);
   const [myApplications, setMyApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,7 +17,7 @@ export default function Jobs() {
   const [success, setSuccess] = useState("");
   
   // Search & Filter
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [selectedTags, setSelectedTags] = useState([]);
   const [statusFilter, setStatusFilter] = useState("All"); // All, Applied, Closed
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -62,6 +64,7 @@ export default function Jobs() {
           app._id === data.applicationId ? { ...app, currentStage: data.status } : app
         ));
         if (data.status === 'SELECTED') {
+          refreshUser(); // Update placement status
           fetchData(); // Refresh everything to reflect placement status
         }
       });
@@ -79,14 +82,25 @@ export default function Jobs() {
         setSelectedJob(prev => prev?._id === jobId ? null : prev);
       });
 
+      socket.on('profileVerified', () => {
+        fetchData(); // Refresh when profile is verified
+      });
+
+      socket.on('userPlaced', () => {
+        refreshUser(); // Update placement status
+        fetchData(); // Refresh when user is placed
+      });
+
       return () => {
         socket.off('applicationUpdate');
         socket.off('newJob');
         socket.off('jobUpdated');
         socket.off('jobDeleted');
+        socket.off('profileVerified');
+        socket.off('userPlaced');
       };
     }
-  }, [socket, user]);
+  }, [socket, user, refreshUser]);
 
   const handleApply = async (jobId) => {
     try {
@@ -199,9 +213,12 @@ export default function Jobs() {
                 Find your dream job or internship from our curated list of verified openings.
               </p>
             </div>
-            <div className="flex items-center gap-4 text-sm font-medium">
-              <span className="text-white/40">Active Openings:</span>
-              <span className="bg-primary text-secondary px-3 py-1 rounded-full font-bold">{jobs.length}</span>
+            <div className="flex items-center gap-6 text-sm font-medium">
+              <div className="flex items-center gap-4">
+                <span className="text-white/40">Active Openings:</span>
+                <span className="bg-primary text-secondary px-3 py-1 rounded-full font-bold">{jobs.length}</span>
+              </div>
+              <RefreshButton onRefresh={fetchData} className="!bg-white/10 !border-white/10 !text-white hover:!bg-white/20" />
             </div>
           </div>
         </div>

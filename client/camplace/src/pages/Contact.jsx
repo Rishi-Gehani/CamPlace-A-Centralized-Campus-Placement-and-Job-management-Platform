@@ -1,15 +1,30 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Mail, Phone, MapPin, Send, CheckCircle2 } from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
+import RefreshButton from "../components/RefreshButton";
+import { useEffect } from "react";
 
 export default function Contact() {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
+    firstName: user?.firstName || "",
+    lastName: user?.lastName || "",
+    email: user?.email || "",
     subject: "General Inquiry",
     message: ""
   });
+
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email
+      }));
+    }
+  }, [user]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
@@ -102,6 +117,7 @@ export default function Contact() {
 
   return (
     <div className="pb-24">
+      <RefreshButton onRefresh={() => window.location.reload()} className="fixed top-24 right-8 z-50 !bg-white/80 backdrop-blur-sm" />
       {/* Hero */}
       <section className="bg-secondary text-white py-24 lg:py-32">
         <div className="page-container text-center space-y-6">
@@ -189,6 +205,11 @@ export default function Contact() {
 
             <div className="p-10 lg:p-12 rounded-[3rem] bg-white border border-black/5 shadow-xl">
               <form className="space-y-6" onSubmit={handleSubmit}>
+                {!user && (
+                  <div className="p-4 bg-amber-50 border border-amber-100 rounded-2xl text-amber-700 text-sm font-medium flex items-center gap-2">
+                    Please login to send a query.
+                  </div>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-sm font-bold uppercase tracking-wider text-secondary/40">First Name</label>
@@ -200,6 +221,7 @@ export default function Contact() {
                       className="input-field" 
                       placeholder="First Name" 
                       required
+                      disabled={!!user}
                     />
                   </div>
                   <div className="space-y-2">
@@ -212,6 +234,7 @@ export default function Contact() {
                       className="input-field" 
                       placeholder="Last Name" 
                       required
+                      disabled={!!user}
                     />
                   </div>
                 </div>
@@ -225,6 +248,7 @@ export default function Contact() {
                     className="input-field" 
                     placeholder="yourname@somaiya.edu" 
                     required
+                    disabled={!!user}
                   />
                 </div>
                 <div className="space-y-2">
