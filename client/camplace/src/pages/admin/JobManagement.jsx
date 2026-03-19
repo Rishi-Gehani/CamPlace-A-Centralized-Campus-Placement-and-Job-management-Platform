@@ -17,6 +17,8 @@ export default function JobManagement() {
   const socket = useSocket();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('All');
+  const [selectedRole, setSelectedRole] = useState('');
+  const [selectedCompany, setSelectedCompany] = useState('');
   
   // Modal states
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -132,8 +134,14 @@ export default function JobManagement() {
     const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          job.company.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = filterType === 'All' || job.type === filterType;
-    return matchesSearch && matchesType;
+    const matchesRole = selectedRole === '' || job.title === selectedRole;
+    const matchesCompany = selectedCompany === '' || job.company === selectedCompany;
+    
+    return matchesSearch && matchesType && matchesRole && matchesCompany;
   });
+
+  const roles = [...new Set(jobs.map(j => j.title))].sort();
+  const companies = [...new Set(jobs.map(j => j.company))].sort();
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] pt-24 pb-32">
@@ -188,6 +196,51 @@ export default function JobManagement() {
               </select>
             </div>
           </div>
+          
+          <div className="md:col-span-4 relative">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-secondary/40 ml-1 mb-2 block">Job Role</label>
+            <select 
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
+              className="w-full px-4 py-4 rounded-2xl border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium"
+            >
+              <option value="">All Roles</option>
+              {roles.map(role => (
+                <option key={role} value={role}>{role}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="md:col-span-4 relative">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-secondary/40 ml-1 mb-2 block">Company Name</label>
+            <select 
+              value={selectedCompany}
+              onChange={(e) => setSelectedCompany(e.target.value)}
+              className="w-full px-4 py-4 rounded-2xl border border-black/5 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium"
+            >
+              <option value="">All Companies</option>
+              {companies.map(company => (
+                <option key={company} value={company}>{company}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="md:col-span-1 flex items-end">
+            {(searchTerm || filterType !== 'All' || selectedRole || selectedCompany) && (
+              <button 
+                onClick={() => {
+                  setSearchTerm('');
+                  setFilterType('All');
+                  setSelectedRole('');
+                  setSelectedCompany('');
+                }}
+                className="mb-4 text-xs font-bold text-primary hover:underline"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+
           <div className="md:col-span-3 bg-white p-4 rounded-2xl border border-black/5 shadow-sm flex items-center justify-between h-[60px]">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">

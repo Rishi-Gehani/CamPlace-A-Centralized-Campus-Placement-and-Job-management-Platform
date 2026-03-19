@@ -81,6 +81,11 @@ router.put('/students/verify/:id', adminAuth, async (req, res) => {
               <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px; line-height: 1.6;">Dear ${student.firstName},</p>
               <p style="margin: 0 0 32px 0; color: #475569; font-size: 16px; line-height: 1.6;">We are writing to let you know that your student profile on <strong>CamPlace</strong> has been successfully verified by the administration team. You now have full access to the placement platform.</p>
               <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td align="center">
+                    <a href="${process.env.APP_URL || '#'}" style="display: inline-block; padding: 16px 32px; background-color: #10b981; color: #ffffff; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 16px;">Login to Portal</a>
+                  </td>
+                </tr>
               </table>
             </td>
           </tr>
@@ -116,6 +121,10 @@ router.put('/students/verify/:id', adminAuth, async (req, res) => {
               <p style="margin: 0 0 16px 0; color: #334155; font-size: 16px; line-height: 1.6;">Dear ${student.firstName},</p>
               <p style="margin: 0 0 32px 0; color: #475569; font-size: 16px; line-height: 1.6;">We recently reviewed your registration on the <strong>CamPlace</strong> platform. At this time, we are unable to verify your profile with the current information provided. Please log in to review and correct your details.</p>
               <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td align="center">
+                    <a href="${process.env.APP_URL || '#'}" style="display: inline-block; padding: 16px 32px; background-color: #ef4444; color: #ffffff; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 16px;">Review Profile</a>
+                  </td>
                 </tr>
               </table>
             </td>
@@ -135,6 +144,7 @@ router.put('/students/verify/:id', adminAuth, async (req, res) => {
 
       if (subject && htmlContent) {
         await sendEmail(student.email, subject, htmlContent);
+        console.log(`Verification email sent to ${student.email}`);
       }
     } catch (emailError) {
       console.error('Failed to send verification email:', emailError);
@@ -151,17 +161,40 @@ router.put('/students/verify/:id', adminAuth, async (req, res) => {
 // Get dashboard analytics
 router.get('/analytics', adminAuth, async (req, res) => {
   try {
-    const [students, jobs, applications] = await Promise.all([
-      User.find({ role: 'student' }),
-      Job.find({ deadline: { $gt: new Date() } }),
-      Application.find().populate('jobId')
+    const { month, year, dept, course } = req.query;
+
+    let studentQuery = { role: 'student' };
+    if (dept && dept !== 'ALL') studentQuery.department = dept;
+    if (course && course !== 'ALL') studentQuery.degree = course;
+
+    let jobQuery = { deadline: { $gt: new Date() } };
+    // Jobs aren't strictly tied to dept/course in the model, but we could filter them if they were.
+    // For now, let's keep active jobs as is or filter by date if needed.
+
+    const [students, jobs, allApplications] = await Promise.all([
+      User.find(studentQuery),
+      Job.find(jobQuery),
+      Application.find().populate('jobId').populate('studentId')
     ]);
+
+    // Filter applications based on all criteria
+    const filteredApplications = allApplications.filter(app => {
+      if (!app.studentId) return false;
+      
+      const date = new Date(app.appliedDate);
+      const mMatch = month && month !== 'ALL' ? (date.getMonth() + 1).toString() === month : true;
+      const yMatch = year && year !== 'ALL' ? date.getFullYear().toString() === year : true;
+      const dMatch = dept && dept !== 'ALL' ? app.studentId.department === dept : true;
+      const cMatch = course && course !== 'ALL' ? app.studentId.degree === course : true;
+      
+      return mMatch && yMatch && dMatch && cMatch;
+    });
 
     const stats = {
       totalStudents: students.length,
       pendingVerifications: students.filter(s => s.profileStatus === 'PENDING').length,
       activeJobs: jobs.length,
-      totalApplications: applications.length
+      totalApplications: filteredApplications.length
     };
 
     // 1. Application Pipeline
@@ -170,12 +203,12 @@ router.get('/analytics', adminAuth, async (req, res) => {
     ];
     const pipelineData = pipelineStages.map(stage => ({
       name: stage.replace(/_/g, ' '),
-      value: applications.filter(app => app.currentStage === stage).length
+      value: filteredApplications.filter(app => app.currentStage === stage).length
     }));
 
     // 2. Company-wise Applications
     const companyApps = {};
-    applications.forEach(app => {
+    filteredApplications.forEach(app => {
       const companyName = app.jobId?.company || 'Unknown Company';
       companyApps[companyName] = (companyApps[companyName] || 0) + 1;
     });
@@ -184,10 +217,10 @@ router.get('/analytics', adminAuth, async (req, res) => {
       .slice(0, 10);
 
     // 3. Placement Success Rate (with percentages)
-    const selectedCount = applications.filter(app => app.currentStage === 'SELECTED').length;
-    const rejectedCount = applications.filter(app => app.currentStage === 'REJECTED').length;
-    const inProgressCount = applications.filter(app => app.currentStage && !['SELECTED', 'REJECTED'].includes(app.currentStage)).length;
-    const total = applications.length || 1;
+    const selectedCount = filteredApplications.filter(app => app.currentStage === 'SELECTED').length;
+    const rejectedCount = filteredApplications.filter(app => app.currentStage === 'REJECTED').length;
+    const inProgressCount = filteredApplications.filter(app => app.currentStage && !['SELECTED', 'REJECTED'].includes(app.currentStage)).length;
+    const total = filteredApplications.length || 1;
 
     const successRateData = [
       { name: 'Selected', value: selectedCount, percentage: ((selectedCount / total) * 100).toFixed(1) },
@@ -197,7 +230,7 @@ router.get('/analytics', adminAuth, async (req, res) => {
 
     // 4. Top Hiring Companies
     const hiringCompanies = {};
-    applications.filter(app => app.currentStage === 'SELECTED').forEach(app => {
+    filteredApplications.filter(app => app.currentStage === 'SELECTED').forEach(app => {
       const companyName = app.jobId?.company || 'Unknown Company';
       hiringCompanies[companyName] = (hiringCompanies[companyName] || 0) + 1;
     });
@@ -207,7 +240,7 @@ router.get('/analytics', adminAuth, async (req, res) => {
 
     // 5. Role Distribution
     const roles = {};
-    applications.forEach(app => {
+    filteredApplications.forEach(app => {
       const roleTitle = app.jobId?.title || 'Unknown Role';
       roles[roleTitle] = (roles[roleTitle] || 0) + 1;
     });
@@ -222,7 +255,7 @@ router.get('/analytics', adminAuth, async (req, res) => {
             stage === 'INTERVIEW_ROUND_2' ? 'Technical' : 
             stage === 'INTERVIEW_ROUND_3' ? 'HR' : 
             stage.charAt(0) + stage.slice(1).toLowerCase(),
-      value: applications.filter(app => app.currentStage === 'REJECTED' && app.rejectedAtStage === stage).length
+      value: filteredApplications.filter(app => app.currentStage === 'REJECTED' && app.rejectedAtStage === stage).length
     }));
 
     res.json({

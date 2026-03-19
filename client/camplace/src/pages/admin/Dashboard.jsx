@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion } from "motion/react";
 import { useSocket } from "../../hooks/useSocket";
 import { useToast } from "../../context/ToastContext";
 import RefreshButton from "../../components/RefreshButton";
+import { DEPARTMENTS } from "../../constants/education";
 import { Users, Briefcase, FileText, ShieldCheck, TrendingUp, PieChart as PieChartIcon, BarChart as BarChartIcon } from "lucide-react";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
@@ -11,7 +12,16 @@ import {
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'];
 
-const ChartCard = ({ title, icon: Icon, children }) => (
+const EmptyChartState = ({ message = "No data available for selected filters" }) => (
+  <div className="flex flex-col items-center justify-center h-full text-center p-6">
+    <div className="w-12 h-12 bg-secondary/5 text-secondary/20 rounded-full flex items-center justify-center mb-4">
+      <BarChartIcon size={24} />
+    </div>
+    <p className="text-secondary/40 font-medium text-sm">{message}</p>
+  </div>
+);
+
+const ChartCard = ({ title, icon: Icon, children, hasData }) => (
   <div className="bg-white p-8 rounded-[2.5rem] border border-black/5 shadow-sm hover:shadow-md transition-all">
     <div className="flex items-center gap-3 mb-8">
       <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center">
@@ -20,7 +30,7 @@ const ChartCard = ({ title, icon: Icon, children }) => (
       <h3 className="text-xl font-bold text-secondary">{title}</h3>
     </div>
     <div className="h-[300px] w-full">
-      {children}
+      {hasData ? children : <EmptyChartState />}
     </div>
   </div>
 );
@@ -31,13 +41,36 @@ export default function AdminDashboard() {
   const { showToast } = useToast();
   const socket = useSocket();
   const [error, setError] = useState(null);
+  
+  // Filter States
+  const [selectedMonth, setSelectedMonth] = useState("ALL");
+  const [selectedYear, setSelectedYear] = useState("ALL");
+  const [selectedDept, setSelectedDept] = useState("ALL");
+  const [selectedCourse, setSelectedCourse] = useState("ALL");
+
+  const departmentList = Object.keys(DEPARTMENTS);
+  const courseList = useMemo(() => {
+    if (selectedDept === "ALL") {
+      // Return all unique courses across all departments
+      const allCourses = Object.values(DEPARTMENTS).flat();
+      return [...new Set(allCourses)].sort();
+    }
+    return DEPARTMENTS[selectedDept] || [];
+  }, [selectedDept]);
 
   const fetchAnalytics = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/admin/analytics', {
+      
+      const params = new URLSearchParams();
+      if (selectedMonth !== "ALL") params.append('month', selectedMonth);
+      if (selectedYear !== "ALL") params.append('year', selectedYear);
+      if (selectedDept !== "ALL") params.append('dept', selectedDept);
+      if (selectedCourse !== "ALL") params.append('course', selectedCourse);
+
+      const res = await fetch(`http://localhost:3000/api/admin/analytics?${params.toString()}`, {
         headers: { 'x-auth-token': token }
       });
 
@@ -54,11 +87,11 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedMonth, selectedYear, selectedDept, selectedCourse]);
 
   useEffect(() => {
     fetchAnalytics();
-  }, [fetchAnalytics]);
+  }, [fetchAnalytics, selectedMonth, selectedYear, selectedDept, selectedCourse]);
 
   useEffect(() => {
     if (!socket) return;
@@ -110,6 +143,14 @@ export default function AdminDashboard() {
 
   const { stats, charts } = data;
 
+  const years = ["2023", "2024", "2025", "2026"];
+  const months = [
+    { id: '1', label: 'January' }, { id: '2', label: 'February' }, { id: '3', label: 'March' },
+    { id: '4', label: 'April' }, { id: '5', label: 'May' }, { id: '6', label: 'June' },
+    { id: '7', label: 'July' }, { id: '8', label: 'August' }, { id: '9', label: 'September' },
+    { id: '10', label: 'October' }, { id: '11', label: 'November' }, { id: '12', label: 'December' }
+  ];
+
   const statCards = [
     { label: 'Total Students', value: stats.totalStudents, icon: Users, color: 'text-blue-500', bg: 'bg-blue-50' },
     { label: 'Pending Verifications', value: stats.pendingVerifications, icon: ShieldCheck, color: 'text-amber-500', bg: 'bg-amber-50' },
@@ -123,12 +164,62 @@ export default function AdminDashboard() {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-8"
     >
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-display font-bold text-secondary">Admin Dashboard</h1>
           <p className="text-secondary/60 font-medium text-lg">Real-time insights into recruitment and placement performance.</p>
         </div>
-        <RefreshButton onRefresh={fetchAnalytics} />
+        <div className="flex flex-wrap items-center gap-3">
+          <RefreshButton onRefresh={fetchAnalytics} />
+          <select 
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            className="px-4 py-2 bg-white border border-black/5 rounded-xl text-xs font-bold text-secondary/60 focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="ALL">All Months</option>
+            {months.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
+          </select>
+          <select 
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(e.target.value)}
+            className="px-4 py-2 bg-white border border-black/5 rounded-xl text-xs font-bold text-secondary/60 focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="ALL">All Years</option>
+            {years.map(y => <option key={y} value={y}>{y}</option>)}
+          </select>
+          <select 
+            value={selectedDept}
+            onChange={(e) => {
+              setSelectedDept(e.target.value);
+              setSelectedCourse("ALL"); // Reset course when department changes
+            }}
+            className="px-4 py-2 bg-white border border-black/5 rounded-xl text-xs font-bold text-secondary/60 focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="ALL">All Departments</option>
+            {departmentList.map(d => <option key={d} value={d}>{d}</option>)}
+          </select>
+          <select 
+            value={selectedCourse}
+            onChange={(e) => setSelectedCourse(e.target.value)}
+            className="px-4 py-2 bg-white border border-black/5 rounded-xl text-xs font-bold text-secondary/60 focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="ALL">All Courses</option>
+            {courseList.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          {(selectedMonth !== "ALL" || selectedYear !== "ALL" || selectedDept !== "ALL" || selectedCourse !== "ALL") && (
+            <button 
+              onClick={() => {
+                setSelectedMonth("ALL");
+                setSelectedYear("ALL");
+                setSelectedDept("ALL");
+                setSelectedCourse("ALL");
+              }}
+              className="text-xs font-bold text-primary hover:underline"
+            >
+              Clear
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -147,7 +238,11 @@ export default function AdminDashboard() {
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* 1. Application Pipeline */}
-        <ChartCard title="Application Pipeline" icon={TrendingUp}>
+        <ChartCard 
+          title="Application Pipeline" 
+          icon={TrendingUp}
+          hasData={charts?.pipeline?.some(d => d.value > 0)}
+        >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={charts?.pipeline || []} layout="vertical" margin={{ left: 40, right: 40 }}>
               <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
@@ -160,9 +255,13 @@ export default function AdminDashboard() {
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
-
+ 
         {/* 2. Company-wise Applications */}
-        <ChartCard title="Company-wise Applications" icon={BarChartIcon}>
+        <ChartCard 
+          title="Company-wise Applications" 
+          icon={BarChartIcon}
+          hasData={charts?.companyApps?.length > 0}
+        >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={charts?.companyApps || []} margin={{ bottom: 40 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -182,9 +281,13 @@ export default function AdminDashboard() {
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
-
+ 
         {/* 3. Placement Success Rate */}
-        <ChartCard title={`Placement Success Rate (Total: ${stats?.totalApplications || 0})`} icon={PieChartIcon}>
+        <ChartCard 
+          title={`Placement Success Rate (Total: ${stats?.totalApplications || 0})`} 
+          icon={PieChartIcon}
+          hasData={stats?.totalApplications > 0}
+        >
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -209,9 +312,13 @@ export default function AdminDashboard() {
             </PieChart>
           </ResponsiveContainer>
         </ChartCard>
-
+ 
         {/* 4. Top Hiring Companies */}
-        <ChartCard title="Top Hiring Companies" icon={TrendingUp}>
+        <ChartCard 
+          title="Top Hiring Companies" 
+          icon={TrendingUp}
+          hasData={charts?.topHiring?.length > 0}
+        >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={charts?.topHiring || []} layout="vertical" margin={{ left: 40, right: 40 }}>
               <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
@@ -224,9 +331,13 @@ export default function AdminDashboard() {
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
-
+ 
         {/* 5. Role Distribution */}
-        <ChartCard title="Role Distribution" icon={PieChartIcon}>
+        <ChartCard 
+          title="Role Distribution" 
+          icon={PieChartIcon}
+          hasData={charts?.roleDistribution?.length > 0}
+        >
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -245,9 +356,13 @@ export default function AdminDashboard() {
             </PieChart>
           </ResponsiveContainer>
         </ChartCard>
-
+ 
         {/* 6. Stage-wise Rejection Analysis */}
-        <ChartCard title="Stage-wise Rejection Analysis" icon={BarChartIcon}>
+        <ChartCard 
+          title="Stage-wise Rejection Analysis" 
+          icon={BarChartIcon}
+          hasData={charts?.stageRejection?.some(d => d.value > 0)}
+        >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={charts?.stageRejection || []} margin={{ bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
