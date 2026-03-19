@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { X, User, History, HelpCircle, Lock, LogOut, ChevronRight, Shield } from 'lucide-react';
+import { X, User, History, HelpCircle, Lock, LogOut, ChevronRight, Shield, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
 
@@ -7,6 +7,7 @@ export default function ProfileSidebar({ isOpen, onClose }) {
   const { user, logout } = useAuth();
 
   const menuItems = [
+    { icon: LayoutDashboard, label: 'Analytics Dashboard', path: '/dashboard' },
     { icon: User, label: 'Manage Profile', path: '/profile' },
     { icon: History, label: 'Interview Resources', path: '/interview-resources' },
     { icon: HelpCircle, label: 'Help Manual', path: '/help' },

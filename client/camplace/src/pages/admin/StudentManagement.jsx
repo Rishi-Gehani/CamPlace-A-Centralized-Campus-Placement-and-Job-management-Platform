@@ -16,6 +16,7 @@ export default function StudentManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDept, setSelectedDept] = useState("");
   const [selectedBatch, setSelectedBatch] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState("");
   
   // Modal States
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -130,13 +131,18 @@ export default function StudentManagement() {
       
       const matchesDept = selectedDept === "" || student.department === selectedDept;
       const matchesBatch = selectedBatch === "" || String(student.batch) === selectedBatch;
+      const matchesCourse = selectedCourse === "" || student.degree === selectedCourse;
       
-      return matchesSearch && matchesDept && matchesBatch;
+      return matchesSearch && matchesDept && matchesBatch && matchesCourse;
     });
-  }, [allStudents, searchTerm, selectedDept, selectedBatch]);
+  }, [allStudents, searchTerm, selectedDept, selectedBatch, selectedCourse]);
 
   const departments = useMemo(() => {
     return [...new Set(allStudents.map(s => s.department))].filter(Boolean).sort();
+  }, [allStudents]);
+
+  const courses = useMemo(() => {
+    return [...new Set(allStudents.map(s => s.degree))].filter(Boolean).sort();
   }, [allStudents]);
 
   const batches = useMemo(() => {
@@ -309,6 +315,16 @@ export default function StudentManagement() {
                     ))}
                   </select>
                   <select 
+                    value={selectedCourse}
+                    onChange={(e) => setSelectedCourse(e.target.value)}
+                    className="px-4 py-2 bg-black/5 rounded-xl text-xs font-bold text-secondary/60 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  >
+                    <option value="">All Courses</option>
+                    {courses.map(course => (
+                      <option key={course} value={course}>{course}</option>
+                    ))}
+                  </select>
+                  <select 
                     value={selectedBatch}
                     onChange={(e) => setSelectedBatch(e.target.value)}
                     className="px-4 py-2 bg-black/5 rounded-xl text-xs font-bold text-secondary/60 focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -318,12 +334,13 @@ export default function StudentManagement() {
                       <option key={batch} value={batch}>{batch}</option>
                     ))}
                   </select>
-                  {(searchTerm || selectedDept || selectedBatch) && (
+                  {(searchTerm || selectedDept || selectedBatch || selectedCourse) && (
                     <button 
                       onClick={() => {
                         setSearchTerm("");
                         setSelectedDept("");
                         setSelectedBatch("");
+                        setSelectedCourse("");
                       }}
                       className="text-xs font-bold text-primary hover:underline"
                     >

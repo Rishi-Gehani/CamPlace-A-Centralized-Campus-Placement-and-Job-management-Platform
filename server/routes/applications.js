@@ -78,13 +78,83 @@ router.get('/my', auth, async (req, res) => {
   }
 });
 
+// @route   GET api/applications/stats
+// @desc    Get current student's application statistics
+router.get('/stats', auth, async (req, res) => {
+  try {
+    const applications = await Application.find({ studentId: req.user.id }).populate('jobId');
+    
+    // Filter by month/year if provided
+    const { month, year } = req.query;
+    let filteredApps = applications;
+    
+    if (month || year) {
+      filteredApps = applications.filter(app => {
+        const date = new Date(app.appliedDate);
+        const mMatch = month ? (date.getMonth() + 1).toString() === month : true;
+        const yMatch = year ? date.getFullYear().toString() === year : true;
+        return mMatch && yMatch;
+      });
+    }
+
+    // Prepare chart data
+    // 1. Application Trends (by month)
+    const trends = {};
+    // Get last 6 months
+    const last6Months = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      const monthName = d.toLocaleString('default', { month: 'short' });
+      const yearNum = d.getFullYear();
+      const key = `${monthName} ${yearNum}`;
+      last6Months.push(key);
+      trends[key] = 0;
+    }
+
+    filteredApps.forEach(app => {
+      const date = new Date(app.appliedDate);
+      const monthName = date.toLocaleString('default', { month: 'short' });
+      const yearNum = date.getFullYear();
+      const key = `${monthName} ${yearNum}`;
+      if (trends[key] !== undefined) {
+        trends[key]++;
+      }
+    });
+    const trendsData = last6Months.map(name => ({ name, value: trends[name] }));
+
+    // 2. Status Distribution
+    const statusDist = {
+      'Selected': filteredApps.filter(app => app.currentStage === 'SELECTED').length,
+      'Rejected': filteredApps.filter(app => app.currentStage === 'REJECTED').length,
+      'In Progress': filteredApps.filter(app => {
+        const stage = app.currentStage || 'APPLIED';
+        return ['APPLIED', 'SHORTLISTED', 'INTERVIEW_ROUND_1', 'INTERVIEW_ROUND_2', 'INTERVIEW_ROUND_3'].includes(stage);
+      }).length
+    };
+    const statusData = Object.entries(statusDist).map(([name, value]) => ({ name, value }));
+
+    res.json({
+      total: applications.length,
+      filteredTotal: filteredApps.length,
+      charts: {
+        trends: trendsData,
+        status: statusData
+      }
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
 // @route   GET api/applications/admin
 // @desc    Get all applications (Admin only)
 router.get('/admin', adminAuth, async (req, res) => {
   try {
     const applications = await Application.find()
       .populate('jobId')
-      .populate('studentId', 'firstName lastName email')
+      .populate('studentId', 'firstName lastName email department degree resumeUrl placementStatus')
       .sort({ appliedDate: -1 });
     res.json(applications);
   } catch (err) {
