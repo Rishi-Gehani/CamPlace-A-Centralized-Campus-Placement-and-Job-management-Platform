@@ -16,6 +16,7 @@ import StudentInterviewResources from "./pages/InterviewResources.jsx";
 import HelpManual from "./pages/HelpManual.jsx";
 import PrivacyPolicy from "./pages/PrivacyPolicy.jsx";
 import StudentDashboard from "./pages/StudentDashboard.jsx";
+import Quiz from "./pages/Quiz.jsx";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard.jsx";
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="/" element={<Layout />}>
               <Route index element={<Home />} />
               <Route path="about" element={<About />} />
+              <Route path="quiz" element={<Quiz />} />
               <Route path="jobs" element={<Jobs />} />
               <Route path="network" element={<Network />} />
               <Route path="forum" element={<Forum />} />
