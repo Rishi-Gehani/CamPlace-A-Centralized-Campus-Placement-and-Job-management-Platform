@@ -22,6 +22,13 @@ const quizResultSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  insights: [
+    {
+      title: String,
+      harsh_truth: String,
+      action_step: String
+    }
+  ],
   completedAt: {
     type: Date,
     default: Date.now

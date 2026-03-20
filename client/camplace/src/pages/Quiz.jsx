@@ -118,6 +118,16 @@ export default function Quiz() {
     const totalScore = Object.values(answers).reduce((acc, curr) => acc + curr, 0);
     const percentage = (totalScore / QUIZ_QUESTIONS.maxScore) * 100;
 
+    // Prepare QnA History for Gemini
+    const qnaHistory = questions.map(q => {
+      const selectedOption = q.options.find(opt => opt.points === answers[q.id]);
+      return {
+        question: q.question,
+        answer: selectedOption?.text || 'No answer',
+        points: answers[q.id] || 0
+      };
+    });
+
     setLoading(true);
     try {
       const response = await fetch('http://localhost:3000/api/quiz/submit', {
@@ -130,7 +140,8 @@ export default function Quiz() {
           department: selectedDept,
           score: totalScore,
           maxScore: QUIZ_QUESTIONS.maxScore,
-          percentage: Math.round(percentage)
+          percentage: Math.round(percentage),
+          qnaHistory
         })
       });
 
@@ -414,25 +425,34 @@ export default function Quiz() {
                 </div>
               </div>
 
-              {/* Tips Section */}
+              {/* AI Insights Section */}
               <div className="mt-20 pt-12 border-t border-gray-100">
                 <h3 className="text-xl font-bold mb-8 flex items-center gap-2">
                   <AlertCircle size={20} className="text-primary" />
-                  <span>Personalized Recommendations</span>
+                  <span>Brutal AI Insights & Action Plan</span>
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="p-6 bg-primary/5 rounded-3xl border border-primary/10">
-                    <h4 className="font-bold mb-3">Portfolio Building</h4>
-                    <p className="text-sm text-secondary/60">Focus on building 2-3 high-quality projects that solve real problems.</p>
-                  </div>
-                  <div className="p-6 bg-primary/5 rounded-3xl border border-primary/10">
-                    <h4 className="font-bold mb-3">Soft Skills</h4>
-                    <p className="text-sm text-secondary/60">Practice the STAR method for behavioral questions and refine your ATS-friendly resume.</p>
-                  </div>
-                  <div className="p-6 bg-primary/5 rounded-3xl border border-primary/10">
-                    <h4 className="font-bold mb-3">Networking</h4>
-                    <p className="text-sm text-secondary/60">Start reaching out to alumni on LinkedIn for referrals and industry insights.</p>
-                  </div>
+                  {results.insights && results.insights.length > 0 ? (
+                    results.insights.map((insight, idx) => (
+                      <div key={idx} className="p-6 bg-primary/5 rounded-3xl border border-primary/10 flex flex-col h-full">
+                        <h4 className="font-bold mb-3 text-primary uppercase tracking-tight">{insight.title}</h4>
+                        <div className="space-y-4 flex-grow">
+                          <div>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-secondary/40 mb-1">The Harsh Truth</p>
+                            <p className="text-sm text-secondary/70 italic">&quot;{insight.harsh_truth}&quot;</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-primary/60 mb-1">Immediate Action</p>
+                            <p className="text-sm font-medium text-secondary">{insight.action_step}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="col-span-full p-8 bg-gray-50 rounded-3xl text-center">
+                      <p className="text-secondary/50 italic">No AI insights available for this result.</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
