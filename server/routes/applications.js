@@ -1,3 +1,4 @@
+/* global process */
 import express from 'express';
 const router = express.Router();
 import Application from '../models/Application.js';
@@ -7,6 +8,7 @@ import Notification from '../models/Notification.js';
 import { auth } from '../middleware/auth.js';
 import { adminAuth } from '../middleware/adminAuth.js';
 import { sendShortlistedEmail, sendSelectedEmail, sendRejectedEmail } from '../utils/mailer.js';
+import { GoogleGenAI } from "@google/genai";
 
 // @route   POST api/applications/apply/:jobId
 // @desc    Apply for a job
@@ -234,6 +236,46 @@ router.put('/:id/status', adminAuth, async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
+  }
+});
+
+// Generate AI Insights for Student
+router.post('/ai-insights', auth, async (req, res) => {
+  try {
+    const { timeframe, trends, statusDistribution } = req.body;
+
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    const model = "gemini-3.1-flash-lite-preview";
+
+    const prompt = `You are a world-class career coach and placement strategist with 20 years of experience helping students land top-tier jobs. A student has asked for a brutal, data-driven analysis of their current placement performance.
+
+Here is their application data for the timeframe: ${timeframe}
+- Application Trends (Last 6 Months): ${JSON.stringify(trends)}
+- Status Distribution (Current Standing): ${JSON.stringify(statusDistribution)}
+
+Your task is to diagnose their current momentum and provide a strict, executable action plan. Be encouraging but brutally honest about their funnel efficiency.
+
+You MUST return the response as a valid JSON object with the following exact keys:
+- "momentum_diagnosis": A 2-sentence analysis of their application volume and consistency.
+- "funnel_diagnosis": A 1-sentence analysis of their conversion from application to selection/rejection.
+- "critical_bottleneck": Identify the single biggest reason they aren't getting placed yet.
+- "action_plan": An array of 3 strict, executable steps for the next 7 days.
+
+Return ONLY the raw JSON object. Do not include markdown code blocks, conversational text, or any other formatting.`;
+
+    const response = await ai.models.generateContent({
+      model,
+      contents: [{ role: 'user', parts: [{ text: prompt }] }]
+    });
+
+    const text = response.text;
+    const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    const insights = JSON.parse(cleanedText);
+
+    res.json(insights);
+  } catch (error) {
+    console.error('Student AI Insights Error:', error);
+    res.status(500).json({ message: 'Failed to generate AI insights' });
   }
 });
 

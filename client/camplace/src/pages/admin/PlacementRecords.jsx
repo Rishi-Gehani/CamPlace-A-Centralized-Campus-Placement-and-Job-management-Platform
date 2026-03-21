@@ -338,8 +338,7 @@ export default function PlacementRecords() {
                           rel="noopener noreferrer"
                           className="text-primary hover:underline text-xs font-bold flex items-center gap-1"
                         >
-                          View <Download size={12} />
-                        </a>
+                          View</a>
                       ) : (
                         <span className="text-xs text-secondary/20">N/A</span>
                       )}

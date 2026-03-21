@@ -6,6 +6,7 @@ import Job from '../models/Job.js';
 import Application from '../models/Application.js';
 import { adminAuth } from '../middleware/adminAuth.js';
 import { sendEmail } from '../utils/sendEmail.js';
+import { GoogleGenAI } from "@google/genai";
 
 // Get all students
 router.get('/students', adminAuth, async (req, res) => {
@@ -300,6 +301,50 @@ router.delete('/students/:id', adminAuth, async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
+  }
+});
+
+// Generate AI Insights for Admin
+router.post('/ai-insights', adminAuth, async (req, res) => {
+  try {
+    const { successRate, stageRejection, pipeline, roleDistribution, topHiring, companyApps } = req.body;
+
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    const model = "gemini-3.1-flash-lite-preview";
+
+    const prompt = `You are an elite, highly analytical Chief Placement Officer for a top-tier university. The college administrator has asked you to analyze the current placement season based on the aggregated data from their dashboard charts.
+
+Here is the current aggregated chart data:
+- Overall Placement Success Rate: ${JSON.stringify(successRate)}
+- Stage-Wise Rejections: ${JSON.stringify(stageRejection)}
+- Application Pipeline (Funnel): ${JSON.stringify(pipeline)}
+- Role Distribution: ${JSON.stringify(roleDistribution)}
+- Top Hiring Companies: ${JSON.stringify(topHiring)}
+- Company-wise Applications: ${JSON.stringify(companyApps)}
+
+Your task is to provide a high-level strategic analysis. Be sharp, data-driven, and identify exactly where the placement cell needs to intervene.
+
+You MUST return the response as a valid JSON object with the following exact keys:
+- "executive_summary": A 2-sentence high-level overview of the season's health.
+- "market_alignment_fix": An array of 2-3 specific points analyzing if students are applying for the right roles.
+- "bottleneck_intervention": An array of 2-3 specific steps to fix the biggest stage where students are failing.
+- "strategic_opportunity": Identify one untapped opportunity or a positive trend to double down on.
+
+Return ONLY the raw JSON object. Do not include markdown code blocks, conversational text, or any other formatting.`;
+
+    const response = await ai.models.generateContent({
+      model,
+      contents: [{ role: 'user', parts: [{ text: prompt }] }]
+    });
+
+    const text = response.text;
+    const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    const insights = JSON.parse(cleanedText);
+
+    res.json(insights);
+  } catch (error) {
+    console.error('Admin AI Insights Error:', error);
+    res.status(500).json({ message: 'Failed to generate AI insights' });
   }
 });
 

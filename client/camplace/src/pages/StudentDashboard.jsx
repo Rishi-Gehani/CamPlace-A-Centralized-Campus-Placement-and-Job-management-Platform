@@ -6,10 +6,11 @@ import {
 } from "recharts";
 import { 
   LayoutDashboard, TrendingUp, CheckCircle, XCircle, Clock, 
-  Filter, Calendar, RefreshCw, BarChart
+  Filter, Calendar, RefreshCw, BarChart, Sparkles
 } from "lucide-react";
 import { useToast } from "../context/ToastContext";
 import { useSocket } from "../hooks/useSocket";
+import AIInsightsModal from "../components/AIInsightsModal";
 
 const COLORS = ["#10b981", "#ef4444", "#3b82f6", "#f59e0b", "#6366f1"];
 
@@ -22,6 +23,12 @@ export default function StudentDashboard() {
     month: "",
     year: new Date().getFullYear().toString()
   });
+
+  // AI Insights State
+  const [aiInsights, setAiInsights] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState(null);
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
   const fetchStats = async () => {
     try {
@@ -71,10 +78,58 @@ export default function StudentDashboard() {
     });
   };
 
+  const handleAIInsights = async () => {
+    try {
+      setAiLoading(true);
+      setAiError(null);
+      setIsAIModalOpen(true);
+      
+      const timeframe = filters.month 
+        ? `${new Date(0, parseInt(filters.month) - 1).toLocaleString('default', { month: 'long' })} ${filters.year}`
+        : filters.year;
+
+      const response = await fetch('http://localhost:3000/api/applications/ai-insights', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': localStorage.getItem('token')
+        },
+        body: JSON.stringify({
+          timeframe,
+          trends: stats?.charts?.trends || [],
+          statusDistribution: stats?.charts?.status || []
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch AI insights');
+      }
+
+      const insights = await response.json();
+      setAiInsights(insights);
+    } catch (err) {
+      console.error("Failed to generate AI insights", err);
+      setAiError("Failed to generate insights. Please check your API key or try again later.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   if (loading && !stats) {
     return (
       <div className="min-h-screen pt-24 flex items-center justify-center">
         <RefreshCw className="w-8 h-8 text-primary animate-spin" />
+      </div>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <div className="min-h-screen pt-24 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-secondary/60">Failed to load analytics data.</p>
+          <button onClick={fetchStats} className="mt-4 btn-primary">Retry</button>
+        </div>
       </div>
     );
   }
@@ -90,6 +145,13 @@ export default function StudentDashboard() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
+            <button 
+              onClick={handleAIInsights}
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-secondary rounded-xl text-xs font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/10"
+            >
+              <Sparkles size={16} />
+              <span>AI Insights</span>
+            </button>
             <div className="flex items-center gap-2 bg-white p-2 rounded-xl shadow-sm border border-black/5">
               <Calendar size={18} className="text-primary ml-2" />
               <select
@@ -320,6 +382,14 @@ export default function StudentDashboard() {
           </motion.div>
         </div>
       </div>
+
+      <AIInsightsModal 
+        isOpen={isAIModalOpen}
+        onClose={() => setIsAIModalOpen(false)}
+        insights={aiInsights}
+        loading={aiLoading}
+        error={aiError}
+      />
     </div>
   );
 }
