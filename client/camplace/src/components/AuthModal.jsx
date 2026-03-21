@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Mail, Lock, User, Eye, EyeOff, CheckCircle2, Circle, Shield, Phone, GraduationCap, BookOpen, Award, Code, Briefcase, ChevronRight, ChevronLeft } from 'lucide-react';
+import { X, Mail, Lock, User, Eye, EyeOff, CheckCircle2, Circle, Phone, GraduationCap, BookOpen, Award, Code, Briefcase, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { DEPARTMENTS, COLLEGES, FIXED_UNIVERSITY } from '../constants/education';
@@ -63,6 +63,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
         setError('Please enter a valid 10-digit phone number');
         return;
       }
+      // Check for invalid phone patterns like all same digits
       if (/^(\d)\1{9}$/.test(formData.phone)) {
         setError('Please enter a valid phone number (avoid repeating digits)');
         return;
@@ -285,7 +286,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
             <div className="space-y-1">
               <label className="text-xs font-semibold uppercase tracking-wider text-secondary/50 ml-1">Batch (Year)</label>
               <div className="relative">
-                <Shield className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" size={18} />
+                <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" size={18} />
                 <input type="number" name="batch" value={formData.batch} onChange={handleChange} placeholder="2025" className="auth-input" />
               </div>
             </div>
@@ -299,7 +300,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
             <div className="space-y-1">
               <label className="text-xs font-semibold uppercase tracking-wider text-secondary/50 ml-1">College Name</label>
               <div className="relative">
-                <Shield className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" size={18} />
+                <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" size={18} />
                 <select 
                   name="collegeName" 
                   value={formData.collegeName} 
@@ -316,7 +317,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
             <div className="space-y-1">
               <label className="text-xs font-semibold uppercase tracking-wider text-secondary/50 ml-1">University</label>
               <div className="relative">
-                <Shield className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" size={18} />
+                <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" size={18} />
                 <input 
                   type="text" 
                   name="university" 
@@ -410,7 +411,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-8">
                 <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center">
-                  <Shield className="text-primary" size={24} />
+                  <GraduationCap className="text-primary" size={24} />
                 </div>
                 <span className="text-2xl font-display font-bold text-secondary tracking-tight">CamPlace</span>
               </div>

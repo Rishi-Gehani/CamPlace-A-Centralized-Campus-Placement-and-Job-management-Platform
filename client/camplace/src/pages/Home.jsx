@@ -70,7 +70,7 @@ export default function Home() {
     },
     {
       title: "Placement Readiness Quiz",
-      desc: "Check your readiness with our upcoming module. Analyze your skills, internships, and projects to get personalized career insights.",
+      desc: "Check your readiness with our quiz module. Analyze your skills, internships, and projects to get personalized career insights.",
       icon: <ClipboardCheck size={24} />,
       isNew: true
     },
@@ -166,7 +166,7 @@ export default function Home() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                 </span>
-                Placements 2025 Now Open
+                Placements 2026 Now Open
               </div>
               <h1 className="hero-title">
                 Your Gateway to <span className="text-primary">Campus Placements</span> and Internships

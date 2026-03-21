@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { X, User, History, HelpCircle, Lock, LogOut, ChevronRight, Shield, LayoutDashboard } from 'lucide-react';
+import { X, User, History, HelpCircle, Lock, LogOut, ChevronRight, GraduationCap, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
 
@@ -50,7 +50,7 @@ export default function ProfileSidebar({ isOpen, onClose }) {
                   <h3 className="text-lg font-bold">{user.firstName} {user.lastName}</h3>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-xs font-bold uppercase tracking-widest text-secondary/40 bg-black/5 px-2 py-1 rounded-md flex items-center gap-1">
-                      {user.role === 'admin' ? <Shield size={10} /> : null}
+                      {user.role === 'admin' ? <GraduationCap size={10} /> : null}
                       {user.role}
                     </span>
                     <span className="text-xs text-secondary/40">•</span>

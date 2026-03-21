@@ -7,16 +7,22 @@ import {
   BarChart3, 
   UserCircle, 
   LogOut,
-  Shield,
   Menu,
   X,
   History,
   MessageSquare,
-  Bell
+  Bell,
+  GraduationCap
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { motion, AnimatePresence } from "motion/react";
+
+const Logo = ({ size = 24, iconSize = 24 }) => (
+  <div className={`w-${size === 24 ? '10' : '8'} h-${size === 24 ? '10' : '8'} bg-primary rounded-${size === 24 ? 'xl' : 'lg'} flex items-center justify-center`}>
+    <GraduationCap className="text-secondary" size={iconSize} />
+  </div>
+);
 
 export default function AdminLayout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -46,9 +52,7 @@ export default function AdminLayout() {
       <aside className="hidden lg:flex flex-col w-72 bg-secondary text-white fixed inset-y-0 left-0 z-50 overflow-y-auto scrollbar-hide">
         <div className="p-8 shrink-0">
           <Link to="/admin" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-              <Shield className="text-secondary" size={24} />
-            </div>
+            <Logo />
             <span className="text-2xl font-display font-bold tracking-tight">CamPlace</span>
           </Link>
           <div className="mt-2 px-1">
@@ -99,9 +103,7 @@ export default function AdminLayout() {
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-20 bg-secondary text-white flex items-center justify-between px-6 z-[60]">
         <Link to="/admin" className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <Shield className="text-secondary" size={18} />
-          </div>
+          <Logo size={18} iconSize={18} />
           <span className="text-xl font-display font-bold tracking-tight">CamPlace</span>
         </Link>
         <button 
@@ -132,9 +134,7 @@ export default function AdminLayout() {
             >
               <div className="p-8 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-                    <Shield className="text-secondary" size={24} />
-                  </div>
+                  <Logo />
                   <span className="text-2xl font-display font-bold tracking-tight">CamPlace</span>
                 </div>
                 <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 bg-white/5 rounded-xl">

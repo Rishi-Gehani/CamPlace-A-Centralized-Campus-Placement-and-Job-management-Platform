@@ -1,6 +1,6 @@
 import { Link, NavLink } from "react-router-dom";
 import { motion } from "motion/react";
-import { User, LogIn, Menu, X, Shield } from "lucide-react";
+import { User, LogIn, Menu, X, GraduationCap } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import AuthModal from "./AuthModal";
@@ -37,7 +37,7 @@ export default function Navbar() {
         <div className="flex justify-between h-20 items-center">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-              <span className="text-secondary font-bold text-xl">C</span>
+              <GraduationCap className="text-secondary" size={24} />
             </div>
             <span className="text-2xl font-display font-bold tracking-tighter">CamPlace</span>
           </Link>
@@ -64,7 +64,7 @@ export default function Navbar() {
                   <div className="text-right hidden lg:block">
                     <p className="text-sm font-bold leading-none">{user.firstName} {user.lastName}</p>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-secondary/40 flex items-center justify-end gap-1 mt-1">
-                      {user.role === 'admin' && <Shield size={10} />}
+                      {user.role === 'admin' && <GraduationCap size={10} />}
                       {user.role}
                     </p>
                   </div>
