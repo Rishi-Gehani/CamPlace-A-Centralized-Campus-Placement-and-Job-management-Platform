@@ -177,28 +177,28 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
               <label className="text-xs font-semibold uppercase tracking-wider text-secondary/50 ml-1">First Name</label>
               <div className="relative">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" size={18} />
-                <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} placeholder="Rishi" className="auth-input" />
+                <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} placeholder="First Name" className="auth-input" />
               </div>
             </div>
             <div className="space-y-1">
               <label className="text-xs font-semibold uppercase tracking-wider text-secondary/50 ml-1">Last Name</label>
               <div className="relative">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" size={18} />
-                <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Gehani" className="auth-input" />
+                <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Last Name" className="auth-input" />
               </div>
             </div>
             <div className="space-y-1">
               <label className="text-xs font-semibold uppercase tracking-wider text-secondary/50 ml-1">Email Address</label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" size={18} />
-                <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="rishi.gehani@somaiya.edu" className="auth-input" />
+                <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Somaiya Email Address" className="auth-input" />
               </div>
             </div>
             <div className="space-y-1">
               <label className="text-xs font-semibold uppercase tracking-wider text-secondary/50 ml-1">Phone Number</label>
               <div className="relative">
                 <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" size={18} />
-                <input type="text" name="phone" value={formData.phone} onChange={handleChange} placeholder="9876543210" className="auth-input" />
+                <input type="text" name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone Number" className="auth-input" />
               </div>
             </div>
             <div className="space-y-1">
@@ -287,14 +287,14 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
               <label className="text-xs font-semibold uppercase tracking-wider text-secondary/50 ml-1">Batch (Year)</label>
               <div className="relative">
                 <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" size={18} />
-                <input type="number" name="batch" value={formData.batch} onChange={handleChange} placeholder="2025" className="auth-input" />
+                <input type="number" name="batch" value={formData.batch} onChange={handleChange} placeholder="Graduation Year" className="auth-input" />
               </div>
             </div>
             <div className="space-y-1">
               <label className="text-xs font-semibold uppercase tracking-wider text-secondary/50 ml-1">Student ID</label>
               <div className="relative">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" size={18} />
-                <input type="text" name="studentId" value={formData.studentId} onChange={handleChange} placeholder="CE2025_112" className="auth-input" />
+                <input type="text" name="studentId" value={formData.studentId} onChange={handleChange} placeholder="Student ID" className="auth-input" />
               </div>
             </div>
             <div className="space-y-1">
@@ -465,7 +465,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                     <label className="text-xs font-semibold uppercase tracking-wider text-secondary/50 ml-1">Email Address</label>
                     <div className="relative">
                       <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/30" size={18} />
-                      <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="yourname@somaiya.edu" className="auth-input" />
+                      <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="SomaiyaEmail Address" className="auth-input" />
                     </div>
                   </div>
                   <div className="space-y-1">

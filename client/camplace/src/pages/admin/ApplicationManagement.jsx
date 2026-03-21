@@ -304,144 +304,149 @@ export default function ApplicationManagement() {
 
       {/* Table */}
       <div className="bg-white rounded-[2.5rem] border border-black/5 shadow-sm overflow-hidden flex flex-col">
-        <div className="overflow-x-auto max-h-[calc(100vh-400px)] overflow-y-auto custom-scrollbar">
+        {/* overflow-x-auto is the outermost so horizontal scroll spans the full card width.
+            overflow-y-auto is on this same element so sticky thead works correctly —
+            the scroll container and the sticky context are the same element. */}
+        <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-400px)] custom-scrollbar">
           <table className="w-full text-left border-collapse min-w-[1000px]">
             <thead className="sticky top-0 z-10">
-              <tr className="bg-black/[0.02] border-b border-black/5">
-                <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40">Student</th>
-                <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40">Department & Course</th>
-                <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40">Opportunity</th>
-                <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40">Applied Date</th>
-                <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40">Status</th>
-                <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40">Last Stage</th>
-                <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40">Resume</th>
-                <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40 text-right">Actions</th>
+              {/* Background is on each <th> individually so it is always fully opaque
+                  regardless of what is scrolling behind it. */}
+              <tr>
+                <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40 bg-[#f5f5f5] border-b-2 border-black/10">Student</th>
+                <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40 bg-[#f5f5f5] border-b-2 border-black/10">Department & Course</th>
+                <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40 bg-[#f5f5f5] border-b-2 border-black/10">Opportunity</th>
+                <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40 bg-[#f5f5f5] border-b-2 border-black/10">Applied Date</th>
+                <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40 bg-[#f5f5f5] border-b-2 border-black/10">Status</th>
+                <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40 bg-[#f5f5f5] border-b-2 border-black/10">Last Stage</th>
+                <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40 bg-[#f5f5f5] border-b-2 border-black/10">Resume</th>
+                <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-secondary/40 bg-[#f5f5f5] border-b-2 border-black/10 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-black/5">
-              {loading ? (
-                <tr>
-                  <td colSpan="8" className="px-8 py-20 text-center">
-                    <div className="flex flex-col items-center gap-4">
-                      <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                      <p className="text-secondary/40 font-medium">Loading applications...</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : filteredApps.length > 0 ? (
-                filteredApps.map((app) => (
-                  <tr key={app._id} className="hover:bg-black/[0.01] transition-colors group">
-                    <td className="px-8 py-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
-                          {app.studentId?.firstName?.[0] || '?'}{app.studentId?.lastName?.[0] || '?'}
-                        </div>
-                        <div>
-                          <p className="font-bold text-secondary">{app.studentId?.firstName} {app.studentId?.lastName}</p>
-                          <div className="flex items-center gap-2">
-                            <p className="text-xs text-secondary/40">{app.studentId?.email}</p>
-                            <span className={`px-2 py-0.5 rounded-md text-[8px] font-bold uppercase tracking-widest ${
-                              app.studentId?.placementStatus === 'PLACED' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
-                            }`}>
-                              {app.studentId?.placementStatus?.replace('_', ' ')}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-8 py-6">
-                      <div>
-                        <p className="text-sm font-bold text-secondary">{app.studentId?.department || 'N/A'}</p>
-                        <p className="text-xs text-secondary/40">{app.studentId?.degree || 'N/A'}</p>
-                      </div>
-                    </td>
-                    <td className="px-8 py-6">
-                      {app.jobId ? (
-                        <div>
-                          <p className="font-bold text-secondary">{app.jobId.title}</p>
-                          <p className="text-xs text-primary font-medium">{app.jobId.company}</p>
-                        </div>
-                      ) : (
-                        <div>
-                          <p className="font-bold text-red-500">Job Deleted</p>
-                          <p className="text-xs text-secondary/40 italic">No longer available</p>
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-8 py-6">
-                      <p className="text-sm text-secondary/60 font-medium">
-                        {new Date(app.appliedDate).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric'
-                        })}
-                      </p>
-                    </td>
-                    <td className="px-8 py-6">
-                      <span className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest ${
-                        app.currentStage === 'SELECTED' ? 'bg-emerald-50 text-emerald-600' :
-                        app.currentStage === 'REJECTED' ? 'bg-red-50 text-red-600' :
-                        'bg-blue-50 text-blue-600'
-                      }`}>
-                        {STAGES.find(s => s.id === app.currentStage)?.label}
-                      </span>
-                    </td>
-                    <td className="px-8 py-6">
-                      {app.currentStage === 'REJECTED' ? (
-                        <span className="text-xs font-bold text-red-400 uppercase tracking-wider">
-                          {STAGES.find(s => s.id === app.rejectedAtStage)?.label || 'N/A'}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-secondary/20">—</span>
-                      )}
-                    </td>
-                    <td className="px-8 py-6">
-                      {app.studentId?.resumeUrl ? (
-                        <a 
-                          href={app.studentId.resumeUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline text-xs font-bold flex items-center gap-1"
-                        >
-                          View
-                        </a>
-                      ) : (
-                        <span className="text-xs text-secondary/20">N/A</span>
-                      )}
-                    </td>
-                    <td className="px-8 py-6 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        {getNextStage(app.currentStage) && (
-                          <button 
-                            disabled={updatingId === app._id}
-                            onClick={() => updateStatus(app._id, getNextStage(app.currentStage))}
-                            className="p-2 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-all flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest disabled:opacity-50"
-                          >
-                            <ArrowRight size={14} /> Promote
-                          </button>
-                        )}
-                        {app.currentStage !== 'REJECTED' && app.currentStage !== 'SELECTED' && (
-                          <button 
-                            disabled={updatingId === app._id}
-                            onClick={() => updateStatus(app._id, 'REJECTED')}
-                            className="p-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-all flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest disabled:opacity-50"
-                          >
-                            <XCircle size={14} /> Reject
-                          </button>
-                        )}
+              <tbody className="divide-y divide-black/5">
+                {loading ? (
+                  <tr>
+                    <td colSpan="8" className="px-8 py-20 text-center">
+                      <div className="flex flex-col items-center gap-4">
+                        <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                        <p className="text-secondary/40 font-medium">Loading applications...</p>
                       </div>
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="8" className="px-8 py-20 text-center">
-                    <p className="text-secondary/40 font-medium italic">No applications found matching your criteria.</p>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                ) : filteredApps.length > 0 ? (
+                  filteredApps.map((app) => (
+                    <tr key={app._id} className="hover:bg-black/[0.01] transition-colors group">
+                      <td className="px-8 py-6">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+                            {app.studentId?.firstName?.[0] || '?'}{app.studentId?.lastName?.[0] || '?'}
+                          </div>
+                          <div>
+                            <p className="font-bold text-secondary">{app.studentId?.firstName} {app.studentId?.lastName}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="text-xs text-secondary/40">{app.studentId?.email}</p>
+                              <span className={`px-2 py-0.5 rounded-md text-[8px] font-bold uppercase tracking-widest ${
+                                app.studentId?.placementStatus === 'PLACED' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                              }`}>
+                                {app.studentId?.placementStatus?.replace('_', ' ')}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6">
+                        <div>
+                          <p className="text-sm font-bold text-secondary">{app.studentId?.department || 'N/A'}</p>
+                          <p className="text-xs text-secondary/40">{app.studentId?.degree || 'N/A'}</p>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6">
+                        {app.jobId ? (
+                          <div>
+                            <p className="font-bold text-secondary">{app.jobId.title}</p>
+                            <p className="text-xs text-primary font-medium">{app.jobId.company}</p>
+                          </div>
+                        ) : (
+                          <div>
+                            <p className="font-bold text-red-500">Job Deleted</p>
+                            <p className="text-xs text-secondary/40 italic">No longer available</p>
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-8 py-6">
+                        <p className="text-sm text-secondary/60 font-medium">
+                          {new Date(app.appliedDate).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric'
+                          })}
+                        </p>
+                      </td>
+                      <td className="px-8 py-6">
+                        <span className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest ${
+                          app.currentStage === 'SELECTED' ? 'bg-emerald-50 text-emerald-600' :
+                          app.currentStage === 'REJECTED' ? 'bg-red-50 text-red-600' :
+                          'bg-blue-50 text-blue-600'
+                        }`}>
+                          {STAGES.find(s => s.id === app.currentStage)?.label}
+                        </span>
+                      </td>
+                      <td className="px-8 py-6">
+                        {app.currentStage === 'REJECTED' ? (
+                          <span className="text-xs font-bold text-red-400 uppercase tracking-wider">
+                            {STAGES.find(s => s.id === app.rejectedAtStage)?.label || 'N/A'}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-secondary/20">—</span>
+                        )}
+                      </td>
+                      <td className="px-8 py-6">
+                        {app.studentId?.resumeUrl ? (
+                          <a 
+                            href={app.studentId.resumeUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline text-xs font-bold flex items-center gap-1"
+                          >
+                            View
+                          </a>
+                        ) : (
+                          <span className="text-xs text-secondary/20">N/A</span>
+                        )}
+                      </td>
+                      <td className="px-8 py-6 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          {getNextStage(app.currentStage) && (
+                            <button 
+                              disabled={updatingId === app._id}
+                              onClick={() => updateStatus(app._id, getNextStage(app.currentStage))}
+                              className="p-2 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-all flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest disabled:opacity-50"
+                            >
+                              <ArrowRight size={14} /> Promote
+                            </button>
+                          )}
+                          {app.currentStage !== 'REJECTED' && app.currentStage !== 'SELECTED' && (
+                            <button 
+                              disabled={updatingId === app._id}
+                              onClick={() => updateStatus(app._id, 'REJECTED')}
+                              className="p-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-all flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest disabled:opacity-50"
+                            >
+                              <XCircle size={14} /> Reject
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="8" className="px-8 py-20 text-center">
+                      <p className="text-secondary/40 font-medium italic">No applications found matching your criteria.</p>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
         </div>
       </div>
     </motion.div>
