@@ -57,11 +57,12 @@ export const AuthProvider = ({ children }) => {
       if (res.ok) {
         localStorage.setItem('token', data.token);
         setUser(data.user);
+        const displayName = (data.user?.firstName && String(data.user.firstName) !== 'undefined') ? data.user.firstName : 'User';
         setAuthStatus({ 
           type: 'login', 
-          message: `Welcome back, ${data.user.name}! Logging you in...` 
+          message: `Welcome back, ${displayName}! Logging you in...` 
         });
-        setTimeout(() => setAuthStatus(null), 3000);
+        setTimeout(() => setAuthStatus(null), 2000);
         return data.user;
       } else {
         setError(data.message || 'Login failed');
@@ -87,11 +88,12 @@ export const AuthProvider = ({ children }) => {
       if (res.ok) {
         localStorage.setItem('token', data.token);
         setUser(data.user);
+        const displayName = (data.user?.firstName && String(data.user.firstName) !== 'undefined') ? data.user.firstName : 'User';
         setAuthStatus({ 
           type: 'register', 
-          message: `Welcome to CamPlace, ${data.user.name}! Your account has been created.` 
+          message: `Welcome to CamPlace, ${displayName}! Your account has been created.` 
         });
-        setTimeout(() => setAuthStatus(null), 3000);
+        setTimeout(() => setAuthStatus(null), 2000);
         return data.user;
       } else {
         setError(data.message || 'Registration failed');
@@ -115,7 +117,14 @@ export const AuthProvider = ({ children }) => {
       setAuthStatus(null);
       navigate('/', { replace: true });
       openAuthModal('login');
-    }, 3500);
+    }, 2000);
+  };
+
+  const refreshUser = () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetchUser(token);
+    }
   };
 
   const openAuthModal = (mode = 'login') => {
@@ -135,6 +144,7 @@ export const AuthProvider = ({ children }) => {
       login, 
       register, 
       logout,
+      refreshUser,
       isAuthModalOpen,
       authMode,
       openAuthModal,

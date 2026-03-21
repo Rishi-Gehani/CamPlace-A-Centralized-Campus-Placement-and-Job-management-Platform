@@ -7,10 +7,17 @@ export default function AuthStatusPopup({ status }) {
   const { message, type } = status;
 
   const icons = {
-    login: <LogIn className="text-primary" size={24} />,
-    logout: <LogOut className="text-primary" size={24} />,
-    register: <UserPlus className="text-primary" size={24} />,
+    login: <LogIn className="text-emerald-500" size={24} />,
+    logout: <LogOut className="text-red-500" size={24} />,
+    register: <UserPlus className="text-emerald-500" size={24} />,
     loading: <Loader2 className="text-primary animate-spin" size={24} />
+  };
+
+  const bgColors = {
+    login: "bg-emerald-500/10",
+    logout: "bg-red-500/10",
+    register: "bg-emerald-500/10",
+    loading: "bg-primary/10"
   };
 
   return (
@@ -22,7 +29,7 @@ export default function AuthStatusPopup({ status }) {
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           className="bg-white p-10 rounded-[3rem] shadow-2xl border border-black/5 text-center max-w-sm w-full space-y-6"
         >
-          <div className="w-20 h-20 bg-primary/10 rounded-[2rem] flex items-center justify-center mx-auto">
+          <div className={`w-20 h-20 ${bgColors[type] || 'bg-primary/10'} rounded-[2rem] flex items-center justify-center mx-auto`}>
             {icons[type] || <CheckCircle2 className="text-primary" size={24} />}
           </div>
           <div className="space-y-2">
@@ -39,8 +46,8 @@ export default function AuthStatusPopup({ status }) {
                 <motion.div 
                   initial={{ width: 0 }}
                   animate={{ width: "100%" }}
-                  transition={{ duration: 3, ease: "linear" }}
-                  className="h-full bg-primary"
+                  transition={{ duration: 2, ease: "linear" }}
+                  className="h-full bg-red-500"
                 />
               </div>
             </div>
