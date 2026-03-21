@@ -4,11 +4,12 @@ import { useSocket } from "../../hooks/useSocket";
 import { useToast } from "../../context/ToastContext";
 import RefreshButton from "../../components/RefreshButton";
 import { DEPARTMENTS } from "../../constants/education";
-import { Users, Briefcase, FileText, ShieldCheck, TrendingUp, PieChart as PieChartIcon, BarChart as BarChartIcon } from "lucide-react";
+import { Users, Briefcase, FileText, ShieldCheck, TrendingUp, PieChart as PieChartIcon, BarChart as BarChartIcon, Sparkles } from "lucide-react";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
   PieChart, Pie, Cell, LabelList
 } from 'recharts';
+import AIInsightsModal from "../../components/AIInsightsModal";
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'];
 
@@ -47,6 +48,12 @@ export default function AdminDashboard() {
   const [selectedYear, setSelectedYear] = useState("ALL");
   const [selectedDept, setSelectedDept] = useState("ALL");
   const [selectedCourse, setSelectedCourse] = useState("ALL");
+
+  // AI Insights State
+  const [aiInsights, setAiInsights] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState(null);
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
   const departmentList = Object.keys(DEPARTMENTS);
   const courseList = useMemo(() => {
@@ -143,6 +150,42 @@ export default function AdminDashboard() {
 
   const { stats, charts } = data;
 
+  const handleAIInsights = async () => {
+    try {
+      setAiLoading(true);
+      setAiError(null);
+      setIsAIModalOpen(true);
+      
+      const response = await fetch('http://localhost:3000/api/admin/ai-insights', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': localStorage.getItem('token')
+        },
+        body: JSON.stringify({
+          successRate: charts?.successRate?.find(d => d.name === 'Selected')?.percentage || 0,
+          stageRejection: charts?.stageRejection || [],
+          pipeline: charts?.pipeline || [],
+          roleDistribution: charts?.roleDistribution || [],
+          topHiring: charts?.topHiring || [],
+          companyApps: charts?.companyApps || []
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch AI insights');
+      }
+
+      const insights = await response.json();
+      setAiInsights(insights);
+    } catch (err) {
+      console.error("Failed to generate AI insights", err);
+      setAiError("Failed to generate insights. Please check your API key or try again later.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   const years = ["2023", "2024", "2025", "2026"];
   const months = [
     { id: '1', label: 'January' }, { id: '2', label: 'February' }, { id: '3', label: 'March' },
@@ -170,6 +213,13 @@ export default function AdminDashboard() {
           <p className="text-secondary/60 font-medium text-lg">Real-time insights into recruitment and placement performance.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          <button 
+            onClick={handleAIInsights}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-secondary rounded-xl text-xs font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/10"
+          >
+            <Sparkles size={16} />
+            <span>AI Insights</span>
+          </button>
           <RefreshButton onRefresh={fetchAnalytics} />
           <select 
             value={selectedMonth}
@@ -380,6 +430,14 @@ export default function AdminDashboard() {
           </ResponsiveContainer>
         </ChartCard>
       </div>
+
+      <AIInsightsModal 
+        isOpen={isAIModalOpen}
+        onClose={() => setIsAIModalOpen(false)}
+        insights={aiInsights}
+        loading={aiLoading}
+        error={aiError}
+      />
     </motion.div>
   );
 }
