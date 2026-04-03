@@ -91,7 +91,7 @@ export default function NoticesManagement() {
     setIsSubmitting(true);
     
     try {
-      const url = editingNotice ? `http://localhost:3000/api/notices/${editingNotice._id}` : "/api/notices";
+      const url = editingNotice ? `http://localhost:3000/api/notices/${editingNotice._id}` : "http://localhost:3000/api/notices";
       const method = editingNotice ? "PUT" : "POST";
       
       const res = await fetch(url, {

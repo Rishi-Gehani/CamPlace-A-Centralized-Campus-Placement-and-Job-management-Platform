@@ -6,7 +6,6 @@ import Home from "./pages/Home.jsx";
 import About from "./pages/About.jsx";
 import Contact from "./pages/Contact.jsx";
 import Jobs from "./pages/Jobs.jsx";
-import Forum from "./pages/Forum.jsx";
 import Network from "./pages/Network.jsx";
 import Profile from "./pages/Profile.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
@@ -46,7 +45,6 @@ export default function App() {
               <Route path="quiz" element={<Quiz />} />
               <Route path="jobs" element={<Jobs />} />
               <Route path="network" element={<Network />} />
-              <Route path="forum" element={<Forum />} />
               <Route path="contact" element={<Contact />} />
               <Route 
                 path="profile" 

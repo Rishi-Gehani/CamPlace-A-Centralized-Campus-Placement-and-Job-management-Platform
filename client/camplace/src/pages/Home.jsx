@@ -120,7 +120,7 @@ export default function Home() {
   const testimonials = [
     {
       name: "Rahul Sharma",
-      role: "B.Tech CSE, 2024 Batch",
+      role: "BBA, 2025 Batch",
       text: "This portal helped me easily apply to multiple companies and track my placement journey. The interface is so clean and intuitive!",
       image: "https://picsum.photos/seed/student1/100/100",
       company: "Google"
@@ -134,14 +134,14 @@ export default function Home() {
     },
     {
       name: "Amit Kumar",
-      role: "B.Tech ECE, 2024 Batch",
+      role: "MBA, 2024 Batch",
       text: "I love how I can manage my profile and resume in one place. The verification process adds so much value to our applications.",
       image: "https://picsum.photos/seed/student3/100/100",
       company: "Amazon"
     },
     {
       name: "Priya Singh",
-      role: "B.Tech CSE, 2024 Batch",
+      role: "BCA, 2023 Batch",
       text: "The recruitment process details on the Network page helped me prepare specifically for each company's rounds.",
       image: "https://picsum.photos/seed/student4/100/100",
       company: "Deloitte"
