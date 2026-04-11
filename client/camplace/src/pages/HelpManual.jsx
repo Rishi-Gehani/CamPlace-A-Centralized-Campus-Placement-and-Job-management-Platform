@@ -37,6 +37,7 @@ export default function HelpManual() {
         "Password Security: Use a strong password with uppercase, lowercase, numbers, and symbols.",
         "Changing Password: You can change your password from the 'Change Password' section in your profile.",
         "Forgot Password: The placement process is highly confidential. To reset a forgotten password, please visit the Placement Cell in person with your Identity Card (ID Card) and request a manual reset. This ensures your account remains secure.",
+        "Account Deletion: Account deletion requests must be made in person at the Placement Cell. Students are required to submit a written declaration stating valid reasons for the request along with their Identity Card (ID Card). Please note that submitting a request does not guarantee account deletion. The request will be reviewed by the Placement Cell, and deletion will only be approved if the provided reasons are deemed valid and appropriate.",
       ]
     },
     {
