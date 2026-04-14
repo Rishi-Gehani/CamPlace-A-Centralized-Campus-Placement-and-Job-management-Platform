@@ -37,7 +37,7 @@ export default function Partners() {
     {
       id: "tcs",
       name: "TCS",
-      logo: "https://upload.wikimedia.org/wikipedia/commons/b/b1/Tata_Consultancy_Services_Logo.svg",
+      logo: "https://i.pinimg.com/1200x/aa/a2/45/aaa245759726ab04e968b9bff4981a52.jpg",
       description: "A global leader in IT services, consulting & business solutions with a large network of innovation & delivery centers.",
       process: "Aptitude Test (NQT) -> Technical Interview -> HR Round",
       highestPackage: "₹12 LPA",
@@ -57,7 +57,7 @@ export default function Partners() {
     {
       id: "deloitte",
       name: "Deloitte",
-      logo: "https://www2.deloitte.com/content/dam/Deloitte/in/Images/promo_images/deloitte-logo-black.png",
+      logo: "https://tse4.mm.bing.net/th/id/OIP.piPwRumTd-G6EBmo_PMJUgHaD5?pid=Api&P=0&h=180",
       description: "Providing industry-leading audit, consulting, tax, and advisory services.",
       process: "Aptitude Test -> Group Discussion -> Technical Interview -> Partner Round",
       highestPackage: "₹18 LPA",
@@ -127,7 +127,7 @@ export default function Partners() {
     {
       id: "intel",
       name: "Intel",
-      logo: "https://upload.wikimedia.org/wikipedia/commons/c/c9/Intel-logo.svg",
+      logo: "https://tse2.mm.bing.net/th/id/OIP.jo5dPgs47NBogIJiW78VkQHaE8?pid=Api&P=0&h=180",
       description: "Designing and building the essential technologies that serve as the foundation for the world's computing devices.",
       process: "Technical Test -> 2 Technical Interviews -> HR Round",
       highestPackage: "₹35 LPA",
