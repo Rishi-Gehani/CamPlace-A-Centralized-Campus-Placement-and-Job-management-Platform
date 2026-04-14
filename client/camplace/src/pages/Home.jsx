@@ -102,9 +102,9 @@ export default function Home() {
     { id: "google", name: "Google", logo: "https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" },
     { id: "microsoft", name: "Microsoft", logo: "https://img-prod-cms-rt-microsoft-com.akamaized.net/cms/api/am/imageFileData/RE1Mu3b?ver=5c31" },
     { id: "amazon", name: "Amazon", logo: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" },
-    { id: "tcs", name: "TCS", logo: "https://upload.wikimedia.org/wikipedia/commons/b/b1/Tata_Consultancy_Services_Logo.svg" },
+    { id: "tcs", name: "TCS", logo: "https://i.pinimg.com/1200x/aa/a2/45/aaa245759726ab04e968b9bff4981a52.jpg" },
     { id: "infosys", name: "Infosys", logo: "https://upload.wikimedia.org/wikipedia/commons/9/95/Infosys_logo.svg" },
-    { id: "deloitte", name: "Deloitte", logo: "https://www2.deloitte.com/content/dam/Deloitte/in/Images/promo_images/deloitte-logo-black.png" },
+    { id: "deloitte", name: "Deloitte", logo: "https://tse4.mm.bing.net/th/id/OIP.piPwRumTd-G6EBmo_PMJUgHaD5?pid=Api&P=0&h=180" },
     { id: "wipro", name: "Wipro", logo: "https://upload.wikimedia.org/wikipedia/commons/a/a0/Wipro_Primary_Logo_Color_RGB.svg" },
     { id: "accenture", name: "Accenture", logo: "https://upload.wikimedia.org/wikipedia/commons/c/cd/Accenture.svg" },
     { id: "meta", name: "Meta", logo: "https://upload.wikimedia.org/wikipedia/commons/7/7b/Meta_Platforms_Inc._logo.svg" },
@@ -113,7 +113,7 @@ export default function Home() {
     { id: "ibm", name: "IBM", logo: "https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg" },
     { id: "oracle", name: "Oracle", logo: "https://upload.wikimedia.org/wikipedia/commons/5/50/Oracle_logo.svg" },
     { id: "cisco", name: "Cisco", logo: "https://upload.wikimedia.org/wikipedia/commons/0/08/Cisco_logo_blue_2016.svg" },
-    { id: "intel", name: "Intel", logo: "https://upload.wikimedia.org/wikipedia/commons/c/c9/Intel-logo.svg" },
+    { id: "intel", name: "Intel", logo: "https://tse2.mm.bing.net/th/id/OIP.jo5dPgs47NBogIJiW78VkQHaE8?pid=Api&P=0&h=180" },
     { id: "nvidia", name: "NVIDIA", logo: "https://upload.wikimedia.org/wikipedia/commons/2/21/Nvidia_logo.svg" }
   ];
 
