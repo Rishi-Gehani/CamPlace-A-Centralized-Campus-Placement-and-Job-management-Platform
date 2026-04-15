@@ -41,7 +41,7 @@ router.put('/students/verify/:id', adminAuth, async (req, res) => {
     const student = await User.findByIdAndUpdate(
       req.params.id,
       { profileStatus: status },
-      { new: true }
+      { returnDocument: 'after' }
     ).select('-password');
 
     if (!student) {
