@@ -279,7 +279,7 @@ router.post('/ai-insights', auth, async (req, res) => {
     const { timeframe, trends, statusDistribution } = req.body;
 
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-    const model = "gemini-3.1-flash-lite-preview";
+    const models = ["gemini-3.1-flash-lite-preview", "gemini-2.5-flash", "gemini-1.5-flash"];
 
     const prompt = `You are a world-class career coach and placement strategist with 20 years of experience helping students land top-tier jobs. A student has asked for a brutal, data-driven analysis of their current placement performance.
 
@@ -297,12 +297,27 @@ You MUST return the response as a valid JSON object with the following exact key
 
 Return ONLY the raw JSON object. Do not include markdown code blocks, conversational text, or any other formatting.`;
 
-    const response = await ai.models.generateContent({
-      model,
-      contents: [{ role: 'user', parts: [{ text: prompt }] }]
-    });
+    let text = null;
+    let lastError = null;
 
-    const text = response.text;
+    for (const model of models) {
+      try {
+        const response = await ai.models.generateContent({
+          model,
+          contents: [{ role: 'user', parts: [{ text: prompt }] }]
+        });
+        text = response.text;
+        break; // Success, exit the loop
+      } catch (error) {
+        console.warn(`Model ${model} failed:`, error.message);
+        lastError = error;
+      }
+    }
+
+    if (!text) {
+      throw lastError || new Error("All Gemini models failed");
+    }
+
     const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
     const insights = JSON.parse(cleanedText);
 

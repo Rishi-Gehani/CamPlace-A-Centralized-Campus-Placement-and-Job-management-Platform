@@ -41,7 +41,7 @@ router.put('/students/verify/:id', adminAuth, async (req, res) => {
     const student = await User.findByIdAndUpdate(
       req.params.id,
       { profileStatus: status },
-      { returnDocument: 'after' }
+      { new: true }
     ).select('-password');
 
     if (!student) {
@@ -296,7 +296,7 @@ router.post('/ai-insights', adminAuth, async (req, res) => {
     const { successRate, stageRejection, pipeline, roleDistribution, topHiring, companyApps } = req.body;
 
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-    const model = "gemini-3.1-flash-lite-preview";
+    const models = ["gemini-3.1-flash-lite-preview", "gemini-2.5-flash", "gemini-1.5-flash"];
 
     const prompt = `You are an elite, highly analytical Chief Placement Officer for a top-tier university. The college administrator has asked you to analyze the current placement season based on the aggregated data from their dashboard charts.
 
@@ -318,12 +318,27 @@ You MUST return the response as a valid JSON object with the following exact key
 
 Return ONLY the raw JSON object. Do not include markdown code blocks, conversational text, or any other formatting.`;
 
-    const response = await ai.models.generateContent({
-      model,
-      contents: [{ role: 'user', parts: [{ text: prompt }] }]
-    });
+    let text = null;
+    let lastError = null;
 
-    const text = response.text;
+    for (const model of models) {
+      try {
+        const response = await ai.models.generateContent({
+          model,
+          contents: [{ role: 'user', parts: [{ text: prompt }] }]
+        });
+        text = response.text;
+        break; // Success, exit the loop
+      } catch (error) {
+        console.warn(`Model ${model} failed:`, error.message);
+        lastError = error;
+      }
+    }
+
+    if (!text) {
+      throw lastError || new Error("All Gemini models failed");
+    }
+
     const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
     const insights = JSON.parse(cleanedText);
 
