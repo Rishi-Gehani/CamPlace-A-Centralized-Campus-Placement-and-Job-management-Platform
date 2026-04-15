@@ -6,9 +6,13 @@ export const useSocket = () => {
   const { user } = useAuth();
   
   const socket = useMemo(() => {
-    if (!user) return null;
-    return io();
-  }, [user]);
+  if (!user) return null;
+
+  return io('http://localhost:3000', {
+    auth: { token: user.token },
+    transports: ['websocket']
+  });
+}, [user]);
 
   useEffect(() => {
     if (socket && user) {

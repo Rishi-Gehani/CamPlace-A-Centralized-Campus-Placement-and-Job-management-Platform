@@ -29,7 +29,6 @@ export default function AIInsightsModal({ isOpen, onClose, insights, loading, er
               </div>
               <div>
                 <h2 className="text-xl font-display font-bold text-secondary">AI Strategic Insights</h2>
-                <p className="text-xs font-bold uppercase tracking-widest text-primary">Powered by Gemini AI</p>
               </div>
             </div>
             <button 
