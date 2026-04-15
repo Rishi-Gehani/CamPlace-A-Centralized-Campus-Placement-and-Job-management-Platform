@@ -175,6 +175,15 @@ router.put('/:id/status', adminAuth, async (req, res) => {
     let application = await Application.findById(req.params.id);
     if (!application) return res.status(404).json({ message: 'Application not found' });
 
+    // Fetch student to check placement status
+    const student = await User.findById(application.studentId);
+    if (!student) return res.status(404).json({ message: 'Student not found' });
+
+    // Prevent modifying other applications if the student is already placed
+    if (student.placementStatus === 'PLACED' && application.currentStage !== 'SELECTED') {
+      return res.status(400).json({ message: 'Student is already placed. Cannot modify other applications.' });
+    }
+
     // Rule B: Stage Transition Logic (Strict)
     if (status === 'REJECTED') {
       // Capture the stage they were at before being rejected
@@ -193,13 +202,38 @@ router.put('/:id/status', adminAuth, async (req, res) => {
     application.currentStage = status;
     await application.save();
 
-    // Fetch student and job details for email
-    const student = await User.findById(application.studentId);
+    // Fetch job details for email
     const job = await Job.findById(application.jobId);
 
     // Send emails based on status
     if (status === 'SHORTLISTED') {
       sendShortlistedEmail(student, job);
+      
+      // Check if today is the interview day
+      if (job.interviewDate) {
+        const today = new Date();
+        const interviewDate = new Date(job.interviewDate);
+        
+        if (
+          today.getFullYear() === interviewDate.getFullYear() &&
+          today.getMonth() === interviewDate.getMonth() &&
+          today.getDate() === interviewDate.getDate()
+        ) {
+          const timeString = job.interviewTime ? ` at ${job.interviewTime}` : '';
+          const interviewNotification = new Notification({
+            message: `Reminder: Your interview for ${job.title} at ${job.company} is scheduled for today${timeString}!`,
+            type: 'application',
+            relatedId: job._id,
+            recipient: application.studentId
+          });
+          await interviewNotification.save();
+          
+          const io = req.app.get('io');
+          if (io) {
+            io.to(application.studentId.toString()).emit('new_notification', interviewNotification);
+          }
+        }
+      }
     } else if (status === 'SELECTED') {
       sendSelectedEmail(student, job);
     } else if (status === 'REJECTED') {

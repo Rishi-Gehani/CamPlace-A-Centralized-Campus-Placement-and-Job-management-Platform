@@ -212,12 +212,12 @@ export default function InterviewResources() {
             <div className="bg-white rounded-[3rem] border border-black/5 shadow-sm overflow-hidden">
               <div className="divide-y divide-black/5">
                 {resources.map((resource) => (
-                  <div key={resource._id} className="p-8 hover:bg-black/[0.01] transition-all flex items-center justify-between group">
-                    <div className="flex items-center gap-6">
-                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center bg-amber-50 text-amber-500`}>
+                  <div key={resource._id} className="p-8 hover:bg-black/[0.01] transition-all flex items-start justify-between group gap-6">
+                    <div className="flex items-start gap-6 flex-1 min-w-0">
+                      <div className={`w-14 h-14 shrink-0 rounded-2xl flex items-center justify-center bg-amber-50 text-amber-500`}>
                         <ExternalLink size={24} />
                       </div>
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <h4 className="text-lg font-bold text-secondary group-hover:text-primary transition-colors">{resource.title}</h4>
                         <div className="flex flex-wrap items-center gap-3 mt-1">
                           <span className="text-[10px] font-bold text-secondary/30 uppercase tracking-widest">
@@ -228,6 +228,9 @@ export default function InterviewResources() {
                             {new Date(resource.createdAt).toLocaleDateString()}
                           </span>
                         </div>
+                        {resource.description && (
+                          <p className="text-sm text-secondary/60 mt-2 whitespace-pre-wrap">{resource.description}</p>
+                        )}
                         <div className="flex flex-wrap gap-2 mt-3">
                           {resource.tags.map(tag => (
                             <span key={tag} className="text-[9px] font-bold bg-black/5 text-secondary/40 px-2 py-0.5 rounded-md uppercase tracking-wider">
@@ -239,7 +242,7 @@ export default function InterviewResources() {
                     </div>
                     <button 
                       onClick={() => handleAction(resource)}
-                      className="w-12 h-12 rounded-xl bg-secondary text-white flex items-center justify-center hover:bg-primary hover:text-secondary transition-all shadow-lg shadow-secondary/10"
+                      className="w-12 h-12 shrink-0 rounded-xl bg-secondary text-white flex items-center justify-center hover:bg-primary hover:text-secondary transition-all shadow-lg shadow-secondary/10"
                     >
                       <ExternalLink size={20} />
                     </button>
@@ -286,10 +289,11 @@ export default function InterviewResources() {
             <h3 className="text-lg font-bold text-secondary">Preparation Tips</h3>
             <ul className="space-y-3">
               {[
-                "Practice DSA daily",
-                "Review your projects thoroughly",
+                "Research the company thoroughly",
+                "Review your past projects and experiences",
                 "Work on your communication skills",
-                "Keep your resume updated"
+                "Keep your resume updated and tailored",
+                "Prepare questions to ask the interviewer"
               ].map((tip, i) => (
                 <li key={i} className="flex items-start gap-3 text-sm text-secondary/70 font-medium">
                   <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center shrink-0 mt-0.5">

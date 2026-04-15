@@ -18,6 +18,7 @@ import noticeRoutes from './routes/notices.js';
 import notificationRoutes from './routes/notifications.js';
 import quizRoutes from './routes/quiz.js';
 import User from './models/User.js';
+import { startCronJobs } from './utils/cronJobs.js';
 
 dotenv.config();
 
@@ -68,7 +69,7 @@ if (!mongoURL) {
 
 mongoose.connect(mongoURL)
   .then(async () => {
-    console.log('✅ MongoDB connected successfully!');
+    console.log('MongoDB connected successfully!');
     
     // Create default admin if not exists
     const adminEmail = 'rishi.gehani@somaiya.edu';
@@ -85,8 +86,11 @@ mongoose.connect(mongoURL)
         role: 'admin'
       });
       await admin.save();
-      console.log('✅ Default admin created');
+      console.log('Default admin created');
     }
+    
+    // Start cron jobs
+    startCronJobs(io);
   })
   .catch(err => console.error('MongoDB connection error:', err));
 
@@ -121,5 +125,5 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 httpServer.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });

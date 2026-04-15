@@ -42,7 +42,7 @@ export const DEPARTMENTS = {
 export const COLLEGES = [
   "Somaiya School of Basic and Applied Science",
   "S.K. Somaiya College",
-  "K.J Somaiya College of Polytchnique",
+  "K.J Somaiya College of Polytechnique",
   "K.J Somaiya College of Arts & Commerce",
   "K.J Somaiya College of Science",
   "Somaiya Vidya Mandir",

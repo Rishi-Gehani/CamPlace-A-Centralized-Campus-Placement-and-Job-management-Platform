@@ -42,16 +42,17 @@ router.post('/', adminAuth, async (req, res) => {
     const notification = new Notification({
       message: `New job posted: ${job.title}`,
       type: 'job',
-      relatedId: job._id,
-      recipient: null // Broadcast
+      relatedId: job._id
     });
     await notification.save();
 
     // Emit real-time update via Socket.io
     const io = req.app.get('io');
-    io.emit('newJob', job);
-    io.emit('analyticsUpdated');
-    io.emit('new_notification', notification);
+    if (io) {
+      io.emit('newJob', job);
+      io.emit('analyticsUpdated');
+      io.emit('new_notification', notification);
+    }
     
     res.json(job);
   } catch (err) {
@@ -64,13 +65,63 @@ router.post('/', adminAuth, async (req, res) => {
 // @desc    Update a job (Admin only)
 router.put('/:id', adminAuth, async (req, res) => {
   try {
+    const oldJob = await Job.findById(req.params.id);
+    if (!oldJob) return res.status(404).json({ message: 'Job not found' });
+
     const job = await Job.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
       { new: true }
     );
-    if (!job) return res.status(404).json({ message: 'Job not found' });
     
+    // Check if interviewDate was updated to today
+    if (job.interviewDate && (!oldJob.interviewDate || oldJob.interviewDate.getTime() !== job.interviewDate.getTime())) {
+      const today = new Date();
+      const interviewDate = new Date(job.interviewDate);
+      
+      if (
+        today.getFullYear() === interviewDate.getFullYear() &&
+        today.getMonth() === interviewDate.getMonth() &&
+        today.getDate() === interviewDate.getDate()
+      ) {
+        // Find all shortlisted applications for this job
+        const applications = await Application.find({
+          jobId: job._id,
+          currentStage: 'SHORTLISTED'
+        });
+
+        const io = req.app.get('io');
+        
+        for (const app of applications) {
+          // Check if notification already exists for today
+          const existingNotification = await Notification.findOne({
+            recipient: app.studentId,
+            relatedId: job._id,
+            type: 'application',
+            createdAt: {
+              $gte: new Date(new Date().setHours(0, 0, 0, 0)),
+              $lt: new Date(new Date().setHours(23, 59, 59, 999))
+            }
+          });
+
+          if (!existingNotification) {
+            const timeString = job.interviewTime ? ` at ${job.interviewTime}` : '';
+            const notification = new Notification({
+              message: `Reminder: Your interview for ${job.title} at ${job.company} is scheduled for today${timeString}!`,
+              type: 'application',
+              relatedId: job._id,
+              recipient: app.studentId
+            });
+            await notification.save();
+            
+            if (io) {
+              io.to(app.studentId.toString()).emit('new_notification', notification);
+            }
+          }
+        }
+      }
+    }
+
     // Emit real-time update via Socket.io
     const io = req.app.get('io');
     io.emit('jobUpdated', job);

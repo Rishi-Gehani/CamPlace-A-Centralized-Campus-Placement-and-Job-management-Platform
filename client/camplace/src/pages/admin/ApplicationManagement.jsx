@@ -418,18 +418,20 @@ export default function ApplicationManagement() {
                         <div className="flex items-center justify-end gap-2">
                           {getNextStage(app.currentStage) && (
                             <button 
-                              disabled={updatingId === app._id}
+                              disabled={updatingId === app._id || app.studentId?.placementStatus === 'PLACED'}
                               onClick={() => updateStatus(app._id, getNextStage(app.currentStage))}
-                              className="p-2 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-all flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest disabled:opacity-50"
+                              className="p-2 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-all flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+                              title={app.studentId?.placementStatus === 'PLACED' ? "Student is already placed" : ""}
                             >
                               <ArrowRight size={14} /> Promote
                             </button>
                           )}
                           {app.currentStage !== 'REJECTED' && app.currentStage !== 'SELECTED' && (
                             <button 
-                              disabled={updatingId === app._id}
+                              disabled={updatingId === app._id || app.studentId?.placementStatus === 'PLACED'}
                               onClick={() => updateStatus(app._id, 'REJECTED')}
-                              className="p-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-all flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest disabled:opacity-50"
+                              className="p-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-all flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+                              title={app.studentId?.placementStatus === 'PLACED' ? "Student is already placed" : ""}
                             >
                               <XCircle size={14} /> Reject
                             </button>
