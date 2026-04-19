@@ -1,4 +1,4 @@
-#  CamPlace
+#  CamPlace - A Centralized Campus Placement and Job Management Platform.
 
 **CamPlace** is a modern, real-time Campus Placement Management System designed to bridge the gap between students, placement cells, and top recruiting companies. Built on a robust MERN stack, it automates the recruitment pipeline, enforces institutional placement policies, and leverages AI to provide students with actionable career insights.
 
