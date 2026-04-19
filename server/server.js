@@ -63,7 +63,7 @@ app.set('io', io);
 const mongoURL = process.env.MONGODB_URI;
 
 if (!mongoURL) {
-  console.error("❌ ERROR: MONGODB_URI is missing! Check your .env file.");
+  console.error("ERROR: MONGODB_URI is missing! Check your .env file.");
   process.exit(1); // Stops the server from crashing wildly
 }
 

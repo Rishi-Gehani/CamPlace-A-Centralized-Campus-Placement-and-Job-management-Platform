@@ -10,8 +10,7 @@ import { adminAuth } from '../middleware/adminAuth.js';
 import { sendShortlistedEmail, sendSelectedEmail, sendRejectedEmail } from '../utils/mailer.js';
 import { GoogleGenAI } from "@google/genai";
 
-// @route   POST api/applications/apply/:jobId
-// @desc    Apply for a job
+// Apply for a job
 router.post('/apply/:jobId', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
