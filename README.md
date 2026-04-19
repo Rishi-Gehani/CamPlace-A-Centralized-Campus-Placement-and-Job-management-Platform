@@ -1,12 +1,12 @@
-# 🚀 CamPlace
+#  CamPlace
 
 **CamPlace** is a modern, real-time Campus Placement Management System designed to bridge the gap between students, placement cells, and top recruiting companies. Built on a robust MERN stack, it automates the recruitment pipeline, enforces institutional placement policies, and leverages AI to provide students with actionable career insights.
 
 ---
 
-## ✨ Key Features
+##  Key Features
 
-### 🎓 For Students
+###  For Students
 *   **Centralized Command Center:** Track all job applications, shortlists, and upcoming interviews in one place.
 *   **Digital Resume & Profile:** Maintain an up-to-date academic profile, CGPA, skills, and projects that admins can instantly review.
 *   **Real-time Notifications:** Get instant updates via Socket.io when an application status changes (e.g., Shortlisted, Selected).
@@ -14,7 +14,7 @@
 *   **Mock Interview Quizzes:** Department-specific assessments with personalized, AI-generated insights to pinpoint weaknesses.
 *   **Curated Interview Resources:** Access college-approved technical guides, aptitude tests, HR preparation materials, and resume templates.
 
-### 🛡️ For Administrators (Placement Cell)
+###  For Administrators (Placement Cell)
 *   **Live Analytics Dashboard:** Real-time metrics on placement success rates, stage-wise rejections, and top hiring companies.
 *   **Job Broadcasting:** Instantly post jobs and broadcast notifications to eligible students campus-wide.
 *   **Application Kanban/Table Pipeline:** Seamlessly move candidates through stages (Applied → Shortlisted → Interview → Selected).
@@ -24,7 +24,7 @@
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 **Frontend:**
 *   **React 18** (via Vite)
@@ -92,7 +92,7 @@ The app will be running at `http://localhost:3000`.
 
 ---
 
-## 🧠 AI Model Fallback Architecture
+##  AI Model Fallback Architecture
 CamPlace uses a robust, highly-available AI implementation to ensure students and admins always receive their career insights, even during high API demand.
 *   **Primary:** `gemini-3.1-flash-lite-preview` (Fastest, latest)
 *   **Fallback 1:** `gemini-2.5-flash`
@@ -101,7 +101,7 @@ If the primary model is throttled (503 Error), the system automatically attempts
 
 ---
 
-## 🤝 Contributing
+##  Contributing
 Contributions, issues, and feature requests are welcome! 
 Feel free to check out the [issues page](https://github.com/your-username/camplace/issues) if you want to contribute.
 
@@ -113,5 +113,11 @@ Feel free to check out the [issues page](https://github.com/your-username/campla
 
 ---
 
-## 📜 License
+## License
 This project is licensed under the MIT License.
+
+---
+
+##   Contact
+
+Rishi Gehani - rishigehani18@gmail.com
