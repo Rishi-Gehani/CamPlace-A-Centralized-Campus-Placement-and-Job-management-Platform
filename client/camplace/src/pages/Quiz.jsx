@@ -49,7 +49,7 @@ export default function Quiz() {
 
   const fetchResults = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/quiz/results', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/quiz/results`, {
         headers: { 'x-auth-token': localStorage.getItem('token') }
       });
       if (response.ok) {
@@ -69,7 +69,7 @@ export default function Quiz() {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:3000/api/quiz/check/${encodeURIComponent(dept)}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/quiz/check/${encodeURIComponent(dept)}`, {
         headers: { 'x-auth-token': localStorage.getItem('token') }
       });
       const data = await response.json();
@@ -130,7 +130,7 @@ export default function Quiz() {
 
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3000/api/quiz/submit', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/quiz/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

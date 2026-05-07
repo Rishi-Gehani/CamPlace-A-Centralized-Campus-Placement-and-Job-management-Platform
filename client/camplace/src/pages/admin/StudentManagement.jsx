@@ -29,10 +29,10 @@ export default function StudentManagement() {
     try {
       const token = localStorage.getItem('token');
       const [pendingRes, allRes] = await Promise.all([
-        fetch('http://localhost:3000/api/admin/students/pending', {
+        fetch(`${import.meta.env.VITE_API_URL}/api/admin/students/pending`, {
           headers: { 'x-auth-token': token }
         }),
-        fetch('http://localhost:3000/api/admin/students', {
+        fetch(`${import.meta.env.VITE_API_URL}/api/admin/students`, {
           headers: { 'x-auth-token': token }
         })
       ]);
@@ -77,7 +77,7 @@ export default function StudentManagement() {
   const handleVerify = async (id, status) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3000/api/admin/students/verify/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/students/verify/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -103,7 +103,7 @@ export default function StudentManagement() {
     setDeleting(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3000/api/admin/students/${studentToDelete._id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/students/${studentToDelete._id}`, {
         method: 'DELETE',
         headers: { 'x-auth-token': token }
       });

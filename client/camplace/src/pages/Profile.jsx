@@ -70,7 +70,7 @@ export default function Profile() {
   const fetchProfile = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/auth/user', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/user`, {
         headers: { 'x-auth-token': token }
       });
       if (res.ok) {
@@ -90,7 +90,7 @@ export default function Profile() {
 
   const fetchApplications = async () => {
     try {
-      const res = await fetch('http://localhost:3000/api/applications/my', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/applications/my`, {
         headers: { 'x-auth-token': localStorage.getItem('token') }
       });
       if (res.ok) {
@@ -119,7 +119,7 @@ export default function Profile() {
         projects: typeof profileData.projects === 'string' ? profileData.projects.split(',').map(p => p.trim()).filter(p => p) : profileData.projects
       };
 
-      const res = await fetch('http://localhost:3000/api/auth/profile', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -23,7 +23,7 @@ export default function PlacementRecords() {
   const fetchRecords = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:3000/api/applications/admin', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/applications/admin`, {
         headers: { 'x-auth-token': localStorage.getItem('token') }
       });
       if (res.ok) {

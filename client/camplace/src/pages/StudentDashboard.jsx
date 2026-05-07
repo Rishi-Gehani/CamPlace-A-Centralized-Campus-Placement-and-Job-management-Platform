@@ -34,7 +34,7 @@ export default function StudentDashboard() {
     try {
       setLoading(true);
       const queryParams = new URLSearchParams(filters).toString();
-      const response = await fetch(`http://localhost:3000/api/applications/stats?${queryParams}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/applications/stats?${queryParams}`, {
         headers: {
           "x-auth-token": localStorage.getItem("token")
         }
@@ -88,7 +88,7 @@ export default function StudentDashboard() {
         ? `${new Date(0, parseInt(filters.month) - 1).toLocaleString('default', { month: 'long' })} ${filters.year}`
         : filters.year;
 
-      const response = await fetch('http://localhost:3000/api/applications/ai-insights', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/applications/ai-insights`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

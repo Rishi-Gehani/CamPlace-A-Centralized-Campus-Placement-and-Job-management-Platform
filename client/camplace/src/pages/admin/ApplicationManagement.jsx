@@ -34,7 +34,7 @@ export default function ApplicationManagement() {
   const fetchApplications = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:3000/api/applications/admin', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/applications/admin`, {
         headers: { 'x-auth-token': localStorage.getItem('token') }
       });
       if (res.ok) {
@@ -80,7 +80,7 @@ export default function ApplicationManagement() {
   const updateStatus = async (appId, newStatus) => {
     try {
       setUpdatingId(appId);
-      const res = await fetch(`http://localhost:3000/api/applications/${appId}/status`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/applications/${appId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

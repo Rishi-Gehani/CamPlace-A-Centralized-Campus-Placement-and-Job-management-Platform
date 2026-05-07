@@ -48,7 +48,7 @@ export default function InterviewResources() {
       if (debouncedSearch) query.append("search", debouncedSearch);
       if (filter !== "All") query.append("category", filter);
       
-      const res = await fetch(`http://localhost:3000/api/resources?${query.toString()}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/resources?${query.toString()}`);
       const data = await res.json();
       setResources(data);
     } catch (err) {
@@ -61,7 +61,7 @@ export default function InterviewResources() {
 
   const fetchFeatured = useCallback(async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/resources?featured=true");
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/resources?featured=true`);
       const data = await res.json();
       setFeaturedResources(data);
     } catch (err) {
@@ -71,7 +71,7 @@ export default function InterviewResources() {
 
   const fetchCategories = useCallback(async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/resources/categories");
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/resources/categories`);
       const data = await res.json();
       setCategories(data);
     } catch (err) {

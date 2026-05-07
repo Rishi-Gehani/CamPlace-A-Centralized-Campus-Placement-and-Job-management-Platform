@@ -77,7 +77,7 @@ export default function AdminDashboard() {
       if (selectedDept !== "ALL") params.append('dept', selectedDept);
       if (selectedCourse !== "ALL") params.append('course', selectedCourse);
 
-      const res = await fetch(`http://localhost:3000/api/admin/analytics?${params.toString()}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/analytics?${params.toString()}`, {
         headers: { 'x-auth-token': token }
       });
 

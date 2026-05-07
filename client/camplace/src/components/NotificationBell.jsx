@@ -32,7 +32,7 @@ export default function NotificationBell() {
 
   const fetchNotifications = useCallback(async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/notifications", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/notifications`, {
         headers: {
           "x-auth-token": localStorage.getItem("token")
         }
@@ -84,7 +84,7 @@ export default function NotificationBell() {
 
   const markAsRead = async (id) => {
     try {
-      const res = await fetch(`http://localhost:3000/api/notifications/${id}/read`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/notifications/${id}/read`, {
         method: "PUT",
         headers: {
           "x-auth-token": localStorage.getItem("token")
@@ -101,7 +101,7 @@ export default function NotificationBell() {
 
   const markAllAsRead = async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/notifications/read-all", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/notifications/read-all`, {
         method: "PUT",
         headers: {
           "x-auth-token": localStorage.getItem("token")

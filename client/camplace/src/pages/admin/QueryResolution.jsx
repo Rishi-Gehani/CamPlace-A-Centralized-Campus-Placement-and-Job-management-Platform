@@ -16,7 +16,7 @@ export default function QueryResolution() {
 
   const fetchQueries = useCallback(async () => {
     try {
-      const res = await fetch('http://localhost:3000/api/queries', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/queries`, {
         headers: {
           'x-auth-token': localStorage.getItem('token')
         }
@@ -59,7 +59,7 @@ export default function QueryResolution() {
     if (!replyText.trim()) return;
     setSubmittingReply(true);
     try {
-      const res = await fetch(`http://localhost:3000/api/queries/${queryId}/reply`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/queries/${queryId}/reply`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

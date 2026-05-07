@@ -36,7 +36,7 @@ export default function Notices() {
       if (debouncedSearch) query.append("search", debouncedSearch);
       if (filter !== "All") query.append("category", filter);
       
-      const res = await fetch(`http://localhost:3000/api/notices?${query.toString()}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/notices?${query.toString()}`);
       const data = await res.json();
       setNotices(data);
     } catch (err) {

@@ -29,8 +29,8 @@ export default function Jobs() {
     try {
       setLoading(true);
       const [jobsRes, appsRes] = await Promise.all([
-        fetch('http://localhost:3000/api/jobs'),
-        fetch('http://localhost:3000/api/applications/my', {
+        fetch(`${import.meta.env.VITE_API_URL}/api/jobs`),
+        fetch(`${import.meta.env.VITE_API_URL}/api/applications/my`, {
           headers: { 'x-auth-token': localStorage.getItem('token') }
         })
       ]);
@@ -104,7 +104,7 @@ export default function Jobs() {
 
   const handleApply = async (jobId) => {
     try {
-      const res = await fetch(`http://localhost:3000/api/applications/apply/${jobId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/applications/apply/${jobId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

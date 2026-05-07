@@ -30,7 +30,7 @@ export default function JobManagement() {
   const fetchJobs = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:3000/api/jobs');
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/jobs`);
       if (res.ok) {
         const data = await res.json();
         setJobs(data);
@@ -79,7 +79,7 @@ export default function JobManagement() {
 
   const handleCreateOrUpdate = async (formData) => {
     try {
-      const url = selectedJob ? `http://localhost:3000/api/jobs/${selectedJob._id}` : 'http://localhost:3000/api/jobs';
+      const url = selectedJob ? `${import.meta.env.VITE_API_URL}/api/jobs/${selectedJob._id}` : `${import.meta.env.VITE_API_URL}/api/jobs`;
       const method = selectedJob ? 'PUT' : 'POST';
       
       const res = await fetch(url, {
@@ -109,7 +109,7 @@ export default function JobManagement() {
   const handleDelete = async () => {
     if (!jobToDelete) return;
     try {
-      const res = await fetch(`http://localhost:3000/api/jobs/${jobToDelete._id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/jobs/${jobToDelete._id}`, {
         method: 'DELETE',
         headers: {
           'x-auth-token': localStorage.getItem('token')

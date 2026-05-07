@@ -45,7 +45,7 @@ export default function InterviewResources() {
       if (search) query.append("search", search);
       if (filter !== "All") query.append("category", filter);
       
-      const res = await fetch(`http://localhost:3000/api/resources?${query.toString()}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/resources?${query.toString()}`);
       const data = await res.json();
       setResources(data);
     } catch (err) {
@@ -55,7 +55,7 @@ export default function InterviewResources() {
 
   const fetchCategories = useCallback(async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/resources/categories");
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/resources/categories`);
       const data = await res.json();
       setCategories(data);
     } catch (err) {
@@ -117,7 +117,7 @@ export default function InterviewResources() {
     };
 
     try {
-      const url = editingResource ? `http://localhost:3000/api/resources/${editingResource._id}` : "http://localhost:3000/api/resources";
+      const url = editingResource ? `${import.meta.env.VITE_API_URL}/api/resources/${editingResource._id}` : `${import.meta.env.VITE_API_URL}/api/resources`;
       const method = editingResource ? "PUT" : "POST";
       
       const res = await fetch(url, {
@@ -181,7 +181,7 @@ export default function InterviewResources() {
     if (!resourceToDelete) return;
 
     try {
-      const res = await fetch(`http://localhost:3000/api/resources/${resourceToDelete}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/resources/${resourceToDelete}`, {
         method: "DELETE",
         headers: {
           "x-auth-token": localStorage.getItem("token")
@@ -205,7 +205,7 @@ export default function InterviewResources() {
 
   const toggleFeatured = async (resource) => {
     try {
-      const res = await fetch(`http://localhost:3000/api/resources/${resource._id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/resources/${resource._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

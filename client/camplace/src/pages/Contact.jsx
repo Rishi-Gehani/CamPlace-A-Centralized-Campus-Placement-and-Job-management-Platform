@@ -77,7 +77,7 @@ export default function Contact() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/queries', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/queries`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

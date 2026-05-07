@@ -45,7 +45,7 @@ export default function NoticesManagement() {
       if (search) query.append("search", search);
       if (filter !== "All") query.append("category", filter);
       
-      const res = await fetch(`http://localhost:3000/api/notices?${query.toString()}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/notices?${query.toString()}`);
       const data = await res.json();
       setNotices(data);
     } catch (err) {
@@ -91,7 +91,7 @@ export default function NoticesManagement() {
     setIsSubmitting(true);
     
     try {
-      const url = editingNotice ? `http://localhost:3000/api/notices/${editingNotice._id}` : "http://localhost:3000/api/notices";
+      const url = editingNotice ? `${import.meta.env.VITE_API_URL}/api/notices/${editingNotice._id}` : `${import.meta.env.VITE_API_URL}/api/notices`;
       const method = editingNotice ? "PUT" : "POST";
       
       const res = await fetch(url, {
@@ -152,7 +152,7 @@ export default function NoticesManagement() {
     if (!noticeToDelete) return;
 
     try {
-      const res = await fetch(`http://localhost:3000/api/notices/${noticeToDelete}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/notices/${noticeToDelete}`, {
         method: "DELETE",
         headers: {
           "x-auth-token": localStorage.getItem("token")
@@ -175,7 +175,7 @@ export default function NoticesManagement() {
 
   const toggleFeatured = async (notice) => {
     try {
-      const res = await fetch(`http://localhost:3000/api/notices/${notice._id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/notices/${notice._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
