@@ -34,7 +34,7 @@ const io = new Server(httpServer, {
   }
 });
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
